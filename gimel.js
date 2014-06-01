@@ -3,7 +3,7 @@ var gimel = (function(scope) {
 
 	var Utils = {
 			/**
-			 * Extends Parent
+			 * Extends Parent class
 			 * @param {function} Child the child class
 			 * @param {function} Parent the parent class
 			 * @return {function} the child class
@@ -368,97 +368,118 @@ var gimel = (function(scope) {
 				}
 				return norm;
 			};
-
 		}
 
+		for (var i = 0, ii = ImageTemplate.extensions.length; i < ii; ++i) {
+			ImageTemplate.extensions[i](AbstractImage, dataType, channels);
+		}
 		return AbstractImage;
 	};
 	
-	var Abstract1ChUint8ClampedImage = ImageTemplate(ImageDataTypes.Uint8Clamped, Channels.Simple);
-	var Abstract1ChUint8Image = ImageTemplate(ImageDataTypes.Uint8, Channels.Simple);
-	var Abstract1ChUint32Image = ImageTemplate(ImageDataTypes.Uint32, Channels.Simple);
-	var Abstract1ChInt8Image = ImageTemplate(ImageDataTypes.Int8, Channels.Simple);
-	var Abstract1ChInt32Image = ImageTemplate(ImageDataTypes.Int32, Channels.Simple);
-	var Abstract1ChFloat32Image = ImageTemplate(ImageDataTypes.Float32, Channels.Simple);
-	var Abstract1ChFloat64Image = ImageTemplate(ImageDataTypes.Float64, Channels.Simple);
-	var Abstract4ChUint8ClampedImage = ImageTemplate(ImageDataTypes.Uint8Clamped, Channels.Multiple);
-	var Abstract4ChUint8Image = ImageTemplate(ImageDataTypes.Uint8, Channels.Multiple);
-	var Abstract4ChUint32Image = ImageTemplate(ImageDataTypes.Uint32, Channels.Multiple);
-	var Abstract4ChInt8Image = ImageTemplate(ImageDataTypes.Int8, Channels.Multiple);
-	var Abstract4ChInt32Image = ImageTemplate(ImageDataTypes.Int32, Channels.Multiple);
-	var Abstract4ChFloat32Image = ImageTemplate(ImageDataTypes.Float32, Channels.Multiple);
-	var Abstract4ChFloat64Image = ImageTemplate(ImageDataTypes.Float64, Channels.Multiple);
-	
-	var HTMLImage = Utils.extend(
-			function HTMLImage(imageElement) {
-				this.canvas = document.createElement('canvas');
-				this.canvas.width = imageElement.width;
-				this.canvas.height = imageElement.height;
-				var context = this.canvas.getContext('2d');
-				context.drawImage(imageElement, 0, 0);
-				this.HTMLImageData = context.getImageData(0, 0, imageElement.width, imageElement.height);
-				Abstract4ChUint8ClampedImage.call(
-						this,
-						imageElement.width, imageElement.height, this.HTMLImageData.data
-				);
-			}, Abstract4ChUint8ClampedImage
-	);
-	
-	HTMLImage.prototype.putImage = function(canvas) {
-		var context = canvas.getContext('2d');
-		this.HTMLImageData.data.set(this.data);
-		context.putImageData(this.HTMLImageData, 0, 0);
+	ImageTemplate.extensions = [];
+	ImageTemplate.extend = function(extension) {
+		ImageTemplate.extensions.push(extension);
 	};
 	
-	HTMLImage.prototype.set = function(image) {
-		console.assert(image.width === this.width, 'HTMLImage::set: images must have the same dimentions');
-		console.assert(image.height === this.height, 'HTMLImage::set: images must have the same dimentions');
-		console.assert(image.CHANNELS === this.CHANNELS, 'HTMLImage::set: images must have the same depth');
-		
-		this.data.set(image.data);
-		return this;
-	};
+	var Abstract1ChUint8ClampedImage = null;
+	var Abstract1ChUint8Image = null;
+	var Abstract1ChUint32Image = null;
+	var Abstract1ChInt8Image = null;
+	var Abstract1ChInt32Image = null;
+	var Abstract1ChFloat32Image = null;
+	var Abstract1ChFloat64Image = null;
+	var Abstract4ChUint8ClampedImage = null;
+	var Abstract4ChUint8Image = null;
+	var Abstract4ChUint32Image = null;
+	var Abstract4ChInt8Image = null;
+	var Abstract4ChInt32Image = null;
+	var Abstract4ChFloat32Image = null;
+	var Abstract4ChFloat64Image = null;
+	var HTMLImage = null;
+	var IntMask = null;
+	var FloatMask = null;
 	
-	var IntMask = Utils.extend(
-			function IntMask(size, data) {
-				Abstract1ChInt32Image.call(
-						this,
-						size, size, data
-				);
-				this.origin = size >> 1;
-			}, Abstract1ChInt32Image
-	);
-	
-	var FloatMask = Utils.extend(
-			function FloatMask(size, data) {
-				Abstract1ChFloat32Image.call(
-						this,
-						size, size, data
-				);
-			}, Abstract1ChFloat32Image
-	);
-	
-	
-	return {
+	var gimelPackage = {
 		Utils: Utils,
 		ImageDataTypes: ImageDataTypes,
 		ImageTemplate: ImageTemplate,
-		HTMLImage: HTMLImage,
-		Abstract1ChUint8ClampedImage: Abstract1ChUint8ClampedImage,
-		Abstract1ChUint8Image: Abstract1ChUint8Image,
-		Abstract1ChUint32Image: Abstract1ChUint32Image,
-		Abstract1ChInt8Image: Abstract1ChInt8Image,
-		Abstract1ChInt32Image: Abstract1ChInt32Image,
-		Abstract1ChFloat32Image: Abstract1ChFloat32Image,
-		Abstract1ChFloat64Image: Abstract1ChFloat64Image,
-		Abstract4ChUint8ClampedImage: Abstract4ChUint8ClampedImage,
-		Abstract4ChUint8Image: Abstract4ChUint8Image,
-		Abstract4ChUint32Image: Abstract4ChUint32Image,
-		Abstract4ChInt8Image: Abstract4ChInt8Image,
-		Abstract4ChInt32Image: Abstract4ChInt32Image,
-		Abstract4ChFloat32Image: Abstract4ChFloat32Image,
-		Abstract4ChFloat64Image: Abstract4ChFloat64Image,
-		IntMask: IntMask,
-		FloatMask: FloatMask
+		HTMLImage: HTMLImage
 	};
+	
+	gimelPackage.init = function() {
+		gimelPackage.Abstract1ChUint8ClampedImage = ImageTemplate(ImageDataTypes.Uint8Clamped, Channels.Simple);
+		gimelPackage.Abstract1ChUint8Image = ImageTemplate(ImageDataTypes.Uint8, Channels.Simple);
+		gimelPackage.Abstract1ChUint32Image = ImageTemplate(ImageDataTypes.Uint32, Channels.Simple);
+		gimelPackage.Abstract1ChInt8Image = ImageTemplate(ImageDataTypes.Int8, Channels.Simple);
+		gimelPackage.Abstract1ChInt32Image = ImageTemplate(ImageDataTypes.Int32, Channels.Simple);
+		gimelPackage.Abstract1ChFloat32Image = ImageTemplate(ImageDataTypes.Float32, Channels.Simple);
+		gimelPackage.Abstract1ChFloat64Image = ImageTemplate(ImageDataTypes.Float64, Channels.Simple);
+		gimelPackage.Abstract4ChUint8ClampedImage = ImageTemplate(ImageDataTypes.Uint8Clamped, Channels.Multiple);
+		gimelPackage.Abstract4ChUint8Image = ImageTemplate(ImageDataTypes.Uint8, Channels.Multiple);
+		gimelPackage.Abstract4ChUint32Image = ImageTemplate(ImageDataTypes.Uint32, Channels.Multiple);
+		gimelPackage.Abstract4ChInt8Image = ImageTemplate(ImageDataTypes.Int8, Channels.Multiple);
+		gimelPackage.Abstract4ChInt32Image = ImageTemplate(ImageDataTypes.Int32, Channels.Multiple);
+		gimelPackage.Abstract4ChFloat32Image = ImageTemplate(ImageDataTypes.Float32, Channels.Multiple);
+		gimelPackage.Abstract4ChFloat64Image = ImageTemplate(ImageDataTypes.Float64, Channels.Multiple);
+	
+		gimelPackage.HTMLImage = Utils.extend(
+				function HTMLImage(imageElement) {
+					this.canvas = document.createElement('canvas');
+					this.canvas.width = imageElement.width;
+					this.canvas.height = imageElement.height;
+					var context = this.canvas.getContext('2d');
+					context.drawImage(imageElement, 0, 0);
+					this.HTMLImageData = context.getImageData(0, 0, imageElement.width, imageElement.height);
+					gimelPackage.Abstract4ChUint8ClampedImage.call(
+							this,
+							imageElement.width, imageElement.height, this.HTMLImageData.data
+					);
+				}, gimelPackage.Abstract4ChUint8ClampedImage
+		);
+		
+		gimelPackage.HTMLImage.prototype.putImage = function(canvas) {
+			var context = canvas.getContext('2d');
+			this.HTMLImageData.data.set(this.data);
+			context.putImageData(this.HTMLImageData, 0, 0);
+		};
+		
+		gimelPackage.HTMLImage.prototype.set = function(image) {
+			console.assert(image.width === this.width, 'HTMLImage::set: images must have the same dimentions');
+			console.assert(image.height === this.height, 'HTMLImage::set: images must have the same dimentions');
+			console.assert(image.CHANNELS === this.CHANNELS, 'HTMLImage::set: images must have the same depth');
+			
+			this.data.set(image.data);
+			return this;
+		};
+		
+		gimelPackage.HTMLImage.openImage = function(path, callback) {
+			var imageElement = new Image();
+			imageElement.addEventListener('load', function() {
+				var htmlImage = new gimelPackage.HTMLImage(imageElement);
+				callback(htmlImage);
+			}, false);
+			imageElement.src = path; 
+		};
+		
+		gimelPackage.IntMask = Utils.extend(
+				function IntMask(size, data) {
+					gimelPackage.Abstract1ChInt32Image.call(
+							this,
+							size, size, data
+					);
+					this.origin = size >> 1;
+				}, gimelPackage.Abstract1ChInt32Image
+		);
+		
+		gimelPackage.FloatMask = Utils.extend(
+				function FloatMask(size, data) {
+					gimelPackage.Abstract1ChFloat32Image.call(
+							this,
+							size, size, data
+					);
+				}, gimelPackage.Abstract1ChFloat32Image
+		);
+	};
+	
+	return gimelPackage;
 })(this);
