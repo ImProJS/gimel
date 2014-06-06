@@ -398,7 +398,7 @@ var gimel = (function(scope) {
 	var HTMLImage = null;
 	var IntMask = null;
 	var FloatMask = null;
-	
+
 	var gimelPackage = {
 		Utils: Utils,
 		ImageDataTypes: ImageDataTypes,
