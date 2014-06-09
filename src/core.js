@@ -1,5 +1,4 @@
-'use strict';
-var gimel = (function(rootScope) {
+var gimel = (function() {
     var Gimel = function Gimel() {
         this.utils = {
                       /**
@@ -18,6 +17,10 @@ var gimel = (function(rootScope) {
 
         this.modules = {};
 
+        /**
+         * The Module container class
+         * @class GimelModule
+         */
         var GimelModule = function GimelModule(name, dependencies, initializer) {
             this.name = name;
             this.dependencies = dependencies;
@@ -36,7 +39,7 @@ var gimel = (function(rootScope) {
 
         /**
          * Tests if some module dependencies are unknown
-         * @param {Object<GimelModules>} the defined modules
+         * @param {Object} the defined modules
          * @return {boolean} true if some mudules depend each other
          */
         var modulesDependenciesUnknown = function(modules) {
@@ -56,22 +59,24 @@ var gimel = (function(rootScope) {
 
         /**
          * Tests if the modules dependencies contains cycles (graph cycle detection algorithm)
-         * @param {Object<GimelModules>} the defined modules
+         * @param {Object} the defined modules
          * @return {boolean} true if some mudules depend each other
          */
         var modulesContainCycles = function(modules) {
-            var moduleName;
+            var moduleName = '';
             var colors = {};
             var nodeNumber = 0;
             var nodeQueue = [];
-
+            var dependencies = [];
+            var i = 0, ii = 0;
+            
             for (moduleName in modules) {
                 colors[moduleName] = 0;
             }
 
             for (moduleName in modules) {
-                var dependencies = modules[moduleName].dependencies;
-                for (var i = 0, ii = dependencies.length; i < ii; ++i) {
+                dependencies = modules[moduleName].dependencies;
+                for (i = 0, ii = dependencies.length; i < ii; ++i) {
                     ++colors[dependencies[i]];
                 }
             }
@@ -85,8 +90,8 @@ var gimel = (function(rootScope) {
 
             while (nodeQueue.length !== 0) {
                 moduleName = nodeQueue.shift();
-                var dependencies = modules[moduleName].dependencies;
-                for (var i = 0, ii = dependencies.length; i < ii; ++i) {
+                dependencies = modules[moduleName].dependencies;
+                for (i = 0, ii = dependencies.length; i < ii; ++i) {
                     if (--colors[dependencies[i]] === 0) {
                         nodeQueue.push(dependencies[i]);
                         ++nodeNumber;
@@ -99,7 +104,7 @@ var gimel = (function(rootScope) {
         /**
          * Creates a new gimel module
          * @param {string} name the module name
-         * @param {array<string>} dependencies the names of required modules to define this one
+         * @param {string[]} dependencies the names of required modules to define this one
          * @param {function} initializer the module definition function
          */
         var createModule = function(name, dependencies, initializer) {
@@ -121,7 +126,7 @@ var gimel = (function(rootScope) {
         /**
          * Defines a new gimel module
          * @param {string} name the module name
-         * @param {array<string>} dependencies the names of required modules to define this one
+         * @param {string[]} dependencies the names of required modules to define this one
          * @param {function} initializer the module definition function
          */
         this.defineModule = function(name, dependencies, initializer) {
@@ -145,7 +150,7 @@ var gimel = (function(rootScope) {
         /**
          * Get an ImageTemplate module
          * @param {string} name the module name
-         * @param {array<string>} dependencies the names of required modules to define this one
+         * @param {string[]} dependencies the names of required modules to define this one
          * @param {function} initializer the module definition function
          */
         this.module = function(name) {
@@ -161,14 +166,16 @@ var gimel = (function(rootScope) {
 
         /**
          * Sorts the module to initialize the dependencies before each module
-         * @param {array<GimelModule>} the modules in the right order
+         * @param {GimelModule[]} the modules in the right order
          */
         var buildInitWorkflow = function() {
             var unknownDependencies = modulesDependenciesUnknown(this.modules);
             var scheduledModules = [];
+            var i = 0, ii = 0;
+            var unresolvedDependencies = [];
 
             if (unknownDependencies.length > 0) { // Do we have unknown modules in dependencies ?
-                for (var i = 0, ii = unknownDependencies.length; i < ii; ++i) {
+                for (i = 0, ii = unknownDependencies.length; i < ii; ++i) {
                     console.error('Gimel::init: module "' + unknownDependencies[i] + '" is unknown');
                 }
             } else if (modulesContainCycles(this.modules)) { // Do we have cycles in dependencies ?
@@ -186,16 +193,16 @@ var gimel = (function(rootScope) {
                 while (modulesToSchedule.length !== 0) {
                     // Move the modules with resolved dependencies (module.modulesUnresolvedDependencies === [])
                     var tmpModules = [];
-                    for (var i = 0; i < modulesToSchedule.length; ++i) {
-                        var unresolvedDependencies = modulesUnresolvedDependencies[modulesToSchedule[i].name];
+                    for (i = 0; i < modulesToSchedule.length; ++i) {
+                        unresolvedDependencies = modulesUnresolvedDependencies[modulesToSchedule[i].name];
                         if (unresolvedDependencies.length === 0) {
                             tmpModules.push(modulesToSchedule.splice(i--, 1)[0]);
                             // We do i-- because the splice remove element i so the next element is at index i now
                         }
                     }
                     // Mark this modules as resolved in the other module dependencies
-                    for (var i = 0, ii = modulesToSchedule.length; i < ii; ++i) {
-                        var unresolvedDependencies = modulesUnresolvedDependencies[modulesToSchedule[i].name];
+                    for (i = 0, ii = modulesToSchedule.length; i < ii; ++i) {
+                        unresolvedDependencies = modulesUnresolvedDependencies[modulesToSchedule[i].name];
                         for (var j = 0, jj = tmpModules.length; j < jj; ++j) {
                             var index = unresolvedDependencies.indexOf(tmpModules[j].name);
                             if (index > -1) {
@@ -234,4 +241,4 @@ var gimel = (function(rootScope) {
     };
 
     return new Gimel();
-})(this);
+})();

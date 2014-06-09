@@ -23,10 +23,20 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
         context.putImageData(this.canvasData, 0, 0);
     };
 
+    /**
+     * Create a Gimel image from a canvas DOM Element
+     * @param {HTMLCanvasElement} canvasDomElement the canvas DOM Element
+     * @return {GimelImage} the Gimel image
+     */
     moduleContent.imageFromDomCanvas = function(canvasDomElement) {
         return new gimel.CanvasImage(canvasDomElement.width, canvasDomElement.height, canvasDomElement);
     };
 
+    /**
+     * Create a Gimel image from a DOM image Element
+     * @param {Image} imageDomElement the image DOM Element
+     * @return {GimelImage} the Gimel image
+     */
     moduleContent.imageFromDomImage = function(imageDomElement) {
         var canvasDomElement = document.createElement('canvas');
         canvasDomElement.width = imageDomElement.width;

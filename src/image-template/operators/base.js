@@ -89,7 +89,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
          */
         GimelImage.prototype.normalize = function(srcMin, srcMax, destMin, destMax) {
             var thisData = this.data;
-            var alpha = (destMax - destMin)/(srcMax - srcMin)
+            var alpha = (destMax - destMin)/(srcMax - srcMin);
 
             for (var t = 0, tt = this.length; t < tt; t += 4) {
                 thisData[t] = (thisData[t] - srcMin)*alpha + destMin;

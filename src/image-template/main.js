@@ -14,6 +14,7 @@ gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
     var ImageTemplate = function(ArrayContructor, channels) {
         /**
          * Constructs Image with specified width, height, channels and data.
+         * @class GimelImage
          * @constructor
          * @param {integer} width
          * @param {integer} height
@@ -30,6 +31,9 @@ gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
             this.dy = width*channels;
             this.length = width*height*channels;
         };
+
+        GimelImage.prototype.CHANNELS = channels;
+        GimelImage.prototype.DATA_TYPE = type;
 
         moduleContent.structures.push(GimelImage);
         gimel[type + channels + 'ChImage'] = GimelImage;
