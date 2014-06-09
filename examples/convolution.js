@@ -1,17 +1,15 @@
 gimel.init();
 
 var canvasElement = document.getElementById('view');
-gimel.io.imageFromFile('samples/sample3.png', function(image) {
+gimel.io.imageFromFile('samples/sample4.png', function(image) {
 
-    var workingImage = new gimel.Uint32T4ChImage(image.width, image.height);
+    var workingImage = new gimel.Int32T4ChImage(image.width, image.height);
     workingImage.from(image);
 
-    // The convolution kernel (single channel image)
-    var kernel = new gimel.Int32T1ChImage(5, 5, [1,  4,  7,  4, 1,
-                                                  4, 16, 26, 16, 4,
-                                                  7, 26, 41, 26, 7,
-                                                  4, 16, 26, 16, 4,
-                                                  1,  4,  7,  4, 1]);
+    // The convolution kernel : sharpening here (be careful of the type)
+    var kernel = new gimel.Float32T1ChImage(3, 3, [-1/2, -1, -1/2,
+                                                 -1,    7, -1,
+                                                 -1/2, -1, -1/2]);
     var workingImage = workingImage.convolve(kernel, true); // true to normalize
     
     image.from(workingImage);
