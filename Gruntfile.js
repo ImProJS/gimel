@@ -3,7 +3,8 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
         concat: {
             options: {
-                separator: '\n\n'
+		    banner: '\'use strict\';\n\n',
+		    separator: '\n\n'
             },
             dist: {
                 src: ['src/*.js', 'src/**/*.js'],
@@ -20,11 +21,8 @@ module.exports = function(grunt) {
                 }
             }
         },
-        qunit: {
-            files: ['test/**/*.html']
-        },
         jshint: {
-            files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
+            files: ['Gruntfile.js', 'src/*.js', 'src/**/*.js', 'test/**/*.js'],
             options: {
                 // options here to override JSHint defaults
                 globals: {
@@ -35,9 +33,12 @@ module.exports = function(grunt) {
                 }
             }
         },
-        watch: {
-            files: ['<%= jshint.files %>'],
-            tasks: ['jshint', 'qunit']
+        jsdoc : {
+            dist : {
+                src: ['src/*.js', 'src/**/*.js'], 
+                dest: 'doc',
+                lenient: true
+            }
         }
     });
 
@@ -46,9 +47,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-jsdoc');
 
-    grunt.registerTask('test', ['jshint', 'qunit']);
-
-    grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-
+    grunt.registerTask('build', ['jshint', 'concat', 'uglify', 'jsdoc']);
 };
