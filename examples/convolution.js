@@ -3,7 +3,7 @@ gimel.init();
 var canvasElement = document.getElementById('view');
 gimel.io.imageFromFile('samples/sample4.png', function(image) {
 
-    var workingImage = new gimel.Int32T4ChImage(image.width, image.height);
+    var workingImage = new gimel.Float32T4ChImage(image.width, image.height);
     workingImage.from(image);
 
     // The convolution kernel : sharpening here (be careful of the type)
