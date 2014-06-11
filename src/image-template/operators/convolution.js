@@ -130,6 +130,18 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
 
             return convolvedImage;
         };
+
+        /**
+         * Compute image gradient using convolution
+         * @return {GimelImage} Gradient image (new)
+         * @todo kernel type according to image type (int or float)
+         */
+        GimelImage.prototype.gradient = function() {
+            var kernel = new gimel.Int8T1ChImage(3, 3, [ 0, -1,  0,
+                                                        -1,  0, +1,
+                                                         0, +1,  0]);
+            return this.convolve(kernel, false);
+        }
     });
 
     return false;
