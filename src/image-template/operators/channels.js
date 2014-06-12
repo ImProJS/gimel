@@ -18,7 +18,20 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             }
             return this;
         };
-    });
 
-    return false;
+        /**
+         * Create an single-channel image form an image channel
+         * @param {GimelImage} matrix the transformation matrix
+         * @return {GimelImage} this image
+         */
+        GimelImage.prototype.getChannel = function(channelIndex) {
+            var image = new GimelImage.T1ChImage(this.width, this.height);
+            var thisData = this.data;
+            var imageData = image.data;
+            for (var t = 0, u = 0, tt = this.length; t < tt; t += 4, ++u) {
+                imageData[u] = thisData[t + channelIndex];
+            }
+            return this;
+        };
+    });
 });

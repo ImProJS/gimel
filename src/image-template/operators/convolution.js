@@ -35,6 +35,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {
                     muv = kernel.data[v*kernel.width + u];
+                    // Top strip
                     for (y = 0; y < vv2; ++y) {
                         for (x = 0; x < xx2; ++x) {
                             srcX = x + u - uu2;
@@ -47,6 +48,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                         }
                     }
 
+                    // Bottom strip
                     for (y = yy2; y < yy; ++y) {
                         for (x = 0; x < xx2; ++x) {
                             srcX = x + u - uu2;
@@ -59,6 +61,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                         }
                     }
 
+                    // Left strip
                     for (y = vv2; y < yy2; ++y) {
                         for (x = 0; x < uu2; ++x) {
                             srcX = x + u - uu2;
@@ -71,6 +74,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                         }
                     }
 
+                    // Right strip
                     for (y = 0; y < yy2; ++y) {
                         for (x = xx2; x < xx; ++x) {
                             srcX = x + u - uu2;
@@ -82,7 +86,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                             destData[tSrc + 2] += srcData[t + 2]*muv;
                         }
                     }
-                    
+
+                    // Bottom right corner
                     for (y = yy2; y < yy; ++y) {
                         for (x = xx2; x < xx; ++x) {
                             srcX = x + u - uu2;
@@ -97,6 +102,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 }
             }
 
+            // Center
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {
                     muv = kernel.data[v*kernel.width + u];

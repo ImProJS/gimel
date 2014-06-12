@@ -1,5 +1,7 @@
 gimel.module('imageTemplate').extend(function(moduleContent) {
     moduleContent.extend(function(GimelImage) {
+        GimelImage.prototype.T_1CH_IMAGE = gimel[GimelImage.prototype.TYPE + GimelImage.prototype.CHANNELS + 'ChImage'];
+
         /**
          * Make an exact copy of an image
          * @return {GimelImage} this the new image
