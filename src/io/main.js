@@ -14,9 +14,21 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
         this.canvasData = canvasData;
         this.canvasDomElement = canvasDomElement;
     };
-    
-    gimel.utils.setInheritance(gimel.CanvasImage, gimel.Uint8ClampedT4ChImage);
-    
+
+    gimel.utils.setToInherit(gimel.CanvasImage, gimel.Uint8ClampedT4ChImage);
+
+    /**
+     * Paint an image on a canvas DOM Element
+     * @param {HTMLCanvasElement} canvasDomElement the canvas DOM Element
+     */
+    gimel.CanvasImage.prototype.updateCanvasData = function() {
+        this.paintOnCanvas(this.canvasDomElement);
+    };
+
+    /**
+     * Paint an image on a canvas DOM Element
+     * @param {HTMLCanvasElement} canvasDomElement the canvas DOM Element
+     */
     gimel.CanvasImage.prototype.paintOnCanvas = function(canvas) {
         var context = canvas.getContext('2d');
         this.canvasData.data.set(this.data);
@@ -33,7 +45,7 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
     };
 
     /**
-     * Create a Gimel image from a DOM image Element
+     * Creates a Gimel image from a DOM image Element
      * @param {Image} imageDomElement the image DOM Element
      * @return {GimelImage} the Gimel image
      */
@@ -46,6 +58,11 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
         return moduleContent.imageFromDomCanvas(canvasDomElement);
     };
 
+    /**
+     * Open an image at the given path as a Gimel image
+     * @param {String} path the image path
+     * @param {fucntion} callback the function to call when the image is opened
+     */
     moduleContent.imageFromFile = function(path, callback) {
         var domElementImage = new Image();
         domElementImage.addEventListener('load', function() {
@@ -55,19 +72,38 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
         domElementImage.src = path;
     };
 
-    moduleContent.imageToDomImage = function(image) {
+    /**
+     * Create an URL of the Gimel image to use is as src attribute in a DOM image
+     * @param {GimelImage} image the Gimel image
+     * @return {string} the URL
+     */
+    moduleContent.imageToDataURL = function(image) {
+        var canvasImage;
         if (!(image instanceof gimel.CanvasImage)) {
-            var canvasImage = new gimel.CanvasImage(image.width, image.height);
+            canvasImage = new gimel.CanvasImage(image.width, image.height);
             if ((image instanceof gimel.Uint8ClampedT4ChImage) || (image instanceof gimel.Uint8T4ChImage)) {
                 canvasImage.set(image); 
             } else {
                 canvasImage.from(image);
             }
+        } else {
+            canvasImage = image;
         }
+        canvasImage.updateCanvasData();
+        return canvasImage.canvasDomElement.toDataURL("image/png");
+    };
+
+    /**
+     * Creates a DOM image Element from a Gimel image
+     * @param {GimelImage} image the Gimel image
+     * @return {Image} the DOM image Element
+     */
+    moduleContent.imageToDomImage = function(image) {
         var imageDomElement = new Image();
-        imageDomElement.src = image.canvasDomElement.toDataURL("image/png");
+        imageDomElement.src = moduleContent.imageToDataURL(image);
         return imageDomElement;
     };
+
 
     return false;
 });

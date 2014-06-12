@@ -7,7 +7,7 @@ var gimel = (function() {
                        * @param {function} Parent the parent class
                        * @return {function} the child class
                        */
-                      setInheritance: function(Child, Parent) {
+                      setToInherit: function(Child, Parent) {
                           Child.Parent = Parent;
                           Child.prototype = Object.create(Parent.prototype);
                           Child.prototype.constructor = Child;

@@ -35,6 +35,23 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
         };
 
         /**
+         * Compute the multiplication of two images (each pixel value)
+         * @param {GimelImage} image the given image
+         * @return {GimelImage} this image
+         */
+        GimelImage.prototype.multiply = function(image) {
+            var thisData = this.data;
+            var srcData = image.data;
+
+            for (var t = 0, tt = image.length; t < tt; t += 4) {
+                thisData[t] *= srcData[t];
+                thisData[t + 1] *= srcData[t + 1];
+                thisData[t + 2] *= srcData[t + 2];
+            }
+            return this;
+        };
+
+        /**
          * Compute the difference of two images (each pixel value)
          * @param {GimelImage} image the given image
          * @return {GimelImage} this image
