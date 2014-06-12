@@ -9,7 +9,7 @@ var gimel = (function() {
                        * @param {function} Parent the parent class
                        * @return {function} the child class
                        */
-                      setInheritance: function(Child, Parent) {
+                      setToInherit: function(Child, Parent) {
                           Child.Parent = Parent;
                           Child.prototype = Object.create(Parent.prototype);
                           Child.prototype.constructor = Child;
@@ -337,6 +337,23 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
         };
 
         /**
+         * Compute the multiplication of two images (each pixel value)
+         * @param {GimelImage} image the given image
+         * @return {GimelImage} this image
+         */
+        GimelImage.prototype.multiply = function(image) {
+            var thisData = this.data;
+            var srcData = image.data;
+
+            for (var t = 0, tt = image.length; t < tt; t += 4) {
+                thisData[t] *= srcData[t];
+                thisData[t + 1] *= srcData[t + 1];
+                thisData[t + 2] *= srcData[t + 2];
+            }
+            return this;
+        };
+
+        /**
          * Compute the difference of two images (each pixel value)
          * @param {GimelImage} image the given image
          * @return {GimelImage} this image
@@ -460,9 +477,22 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             }
             return this;
         };
-    });
 
-    return false;
+        /**
+         * Create an single-channel image form an image channel
+         * @param {GimelImage} matrix the transformation matrix
+         * @return {GimelImage} this image
+         */
+        GimelImage.prototype.getChannel = function(channelIndex) {
+            var image = new GimelImage.T1ChImage(this.width, this.height);
+            var thisData = this.data;
+            var imageData = image.data;
+            for (var t = 0, u = 0, tt = this.length; t < tt; t += 4, ++u) {
+                imageData[u] = thisData[t + channelIndex];
+            }
+            return this;
+        };
+    });
 });
 
 gimel.module('imageTemplate').extend(function(moduleContent) {
@@ -502,6 +532,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {
                     muv = kernel.data[v*kernel.width + u];
+                    // Top strip
                     for (y = 0; y < vv2; ++y) {
                         for (x = 0; x < xx2; ++x) {
                             srcX = x + u - uu2;
@@ -514,6 +545,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                         }
                     }
 
+                    // Bottom strip
                     for (y = yy2; y < yy; ++y) {
                         for (x = 0; x < xx2; ++x) {
                             srcX = x + u - uu2;
@@ -526,6 +558,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                         }
                     }
 
+                    // Left strip
                     for (y = vv2; y < yy2; ++y) {
                         for (x = 0; x < uu2; ++x) {
                             srcX = x + u - uu2;
@@ -538,6 +571,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                         }
                     }
 
+                    // Right strip
                     for (y = 0; y < yy2; ++y) {
                         for (x = xx2; x < xx; ++x) {
                             srcX = x + u - uu2;
@@ -549,7 +583,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                             destData[tSrc + 2] += srcData[t + 2]*muv;
                         }
                     }
-                    
+
+                    // Bottom right corner
                     for (y = yy2; y < yy; ++y) {
                         for (x = xx2; x < xx; ++x) {
                             srcX = x + u - uu2;
@@ -564,6 +599,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 }
             }
 
+            // Center
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {
                     muv = kernel.data[v*kernel.width + u];
@@ -603,7 +639,46 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
 });
 
 gimel.module('imageTemplate').extend(function(moduleContent) {
+    gimel.imageTemplate.extend(function(GimelImage) {
+        /**
+         * Returns the Average pixel value
+         * @return {number[]} the average value
+         */
+        GimelImage.prototype.mean = function() {
+            // TODO
+        };
+
+        /**
+         * Returns the Median pixel value
+         * @return {number[]} the average value
+         */
+        GimelImage.prototype.median = function() {
+            // TODO
+        };
+
+        /**
+         * Returns the Variance
+         * @return {number[]} the average value
+         */
+        GimelImage.prototype.variance = function() {
+            // TODO
+        };
+
+        /**
+         * Returns the Mean Squared Error
+         * @return {number[]} the average value
+         */
+        GimelImage.prototype.meanSquaredError = function() {
+            // TODO
+        };
+
+    });
+});
+
+gimel.module('imageTemplate').extend(function(moduleContent) {
     moduleContent.extend(function(GimelImage) {
+        GimelImage.prototype.T_1CH_IMAGE = gimel[GimelImage.prototype.TYPE + GimelImage.prototype.CHANNELS + 'ChImage'];
+
         /**
          * Make an exact copy of an image
          * @return {GimelImage} this the new image
@@ -714,9 +789,21 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
         this.canvasData = canvasData;
         this.canvasDomElement = canvasDomElement;
     };
-    
-    gimel.utils.setInheritance(gimel.CanvasImage, gimel.Uint8ClampedT4ChImage);
-    
+
+    gimel.utils.setToInherit(gimel.CanvasImage, gimel.Uint8ClampedT4ChImage);
+
+    /**
+     * Paint an image on a canvas DOM Element
+     * @param {HTMLCanvasElement} canvasDomElement the canvas DOM Element
+     */
+    gimel.CanvasImage.prototype.updateCanvasData = function() {
+        this.paintOnCanvas(this.canvasDomElement);
+    };
+
+    /**
+     * Paint an image on a canvas DOM Element
+     * @param {HTMLCanvasElement} canvasDomElement the canvas DOM Element
+     */
     gimel.CanvasImage.prototype.paintOnCanvas = function(canvas) {
         var context = canvas.getContext('2d');
         this.canvasData.data.set(this.data);
@@ -733,7 +820,7 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
     };
 
     /**
-     * Create a Gimel image from a DOM image Element
+     * Creates a Gimel image from a DOM image Element
      * @param {Image} imageDomElement the image DOM Element
      * @return {GimelImage} the Gimel image
      */
@@ -746,6 +833,11 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
         return moduleContent.imageFromDomCanvas(canvasDomElement);
     };
 
+    /**
+     * Open an image at the given path as a Gimel image
+     * @param {String} path the image path
+     * @param {fucntion} callback the function to call when the image is opened
+     */
     moduleContent.imageFromFile = function(path, callback) {
         var domElementImage = new Image();
         domElementImage.addEventListener('load', function() {
@@ -755,19 +847,38 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
         domElementImage.src = path;
     };
 
-    moduleContent.imageToDomImage = function(image) {
+    /**
+     * Create an URL of the Gimel image to use is as src attribute in a DOM image
+     * @param {GimelImage} image the Gimel image
+     * @return {string} the URL
+     */
+    moduleContent.imageToDataURL = function(image) {
+        var canvasImage;
         if (!(image instanceof gimel.CanvasImage)) {
-            var canvasImage = new gimel.CanvasImage(image.width, image.height);
+            canvasImage = new gimel.CanvasImage(image.width, image.height);
             if ((image instanceof gimel.Uint8ClampedT4ChImage) || (image instanceof gimel.Uint8T4ChImage)) {
                 canvasImage.set(image); 
             } else {
                 canvasImage.from(image);
             }
+        } else {
+            canvasImage = image;
         }
+        canvasImage.updateCanvasData();
+        return canvasImage.canvasDomElement.toDataURL("image/png");
+    };
+
+    /**
+     * Creates a DOM image Element from a Gimel image
+     * @param {GimelImage} image the Gimel image
+     * @return {Image} the DOM image Element
+     */
+    moduleContent.imageToDomImage = function(image) {
         var imageDomElement = new Image();
-        imageDomElement.src = image.canvasDomElement.toDataURL("image/png");
+        imageDomElement.src = moduleContent.imageToDataURL(image);
         return imageDomElement;
     };
+
 
     return false;
 });
