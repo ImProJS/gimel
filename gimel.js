@@ -505,8 +505,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
          * @todo handle the sides
          */
         GimelImage.prototype.convolve = function(kernel, normalize) {
-            console.assert(kernel.CHANNELS === 1, 'AbstractImage::convolute: Mask must have just one channel');
-            console.assert(kernel.width === kernel.height, 'AbstractImage::convolute: Mask must be square');
+            console.assert(kernel.CHANNELS === 1, 'AbstractImage::convolve: Mask must have just one channel');
+            console.assert(kernel.width === kernel.height, 'AbstractImage::convolve: Mask must be square');
 
             var convolvedImage = this.cloneStructure();
             var destData = convolvedImage.data;
@@ -644,6 +644,56 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                                                         -1,  0, +1,
                                                          0, +1,  0]);
             return this.convolve(kernel, false);
+        }
+
+        /**
+         * Convolve image with gaussian kernel (blur)
+         * Gaussian function: e^(-pi((x/radius)^2+(y/radius)^2)) 
+         $ =approx (1 - (3(x/radius)^2 - 2(x/radius)^3)) * (1 - (3(y/radius)^2 - 2(y/radius)^3))
+         * @return {GimelImage} convolved image (new)
+         * @todo kernel type according to image type (int or float)
+         */
+        GimelImage.prototype.gaussian = function(size) {
+            console.assert(size & 1,  'AbstractImage::gaussian: Size has to be odd');
+            console.assert(size >= 3, 'AbstractImage::gaussian: Size has to be at least 3');
+            var kernel;
+            switch (size) {
+            case 3: kernel = new gimel.Float32T1ChImage(3, 3, [0.25, 0.50, 0.25,
+                                                               0.50, 1.00, 0.50,
+                                                               0.25, 0.50, 0.25]);
+              break;
+            case 5: kernel = new gimel.Float32T1ChImage(5, 5, [0.07, 0.19, 0.26, 0.19, 0.07,
+                                                               0.19, 0.55, 0.74, 0.55, 0.19,
+                                                               0.26, 0.74, 1.00, 0.74, 0.26,
+                                                               0.19, 0.55, 0.74, 0.55, 0.19,
+                                                               0.07, 0.19, 0.26, 0.19, 0.07]);
+              break;
+            case 7: kernel = new gimel.Float32T1ChImage(7, 7, [0.02, 0.08, 0.13, 0.16, 0.13, 0.08, 0.02,
+                                                               0.08, 0.25, 0.42, 0.50, 0.42, 0.25, 0.08,
+                                                               0.13, 0.42, 0.71, 0.84, 0.71, 0.42, 0.13,
+                                                               0.16, 0.50, 0.84, 1.00, 0.84, 0.50, 0.16,
+                                                               0.13, 0.42, 0.71, 0.84, 0.71, 0.42, 0.13,
+                                                               0.08, 0.25, 0.42, 0.50, 0.42, 0.25, 0.08,
+                                                               0.02, 0.08, 0.13, 0.16, 0.13, 0.08, 0.02]);
+              break;
+            default: 
+              var size2inf = (size - 1) >> 1;
+              var size2sup = (size + 1) >> 1;
+              var data = [];
+              for (var i = 1, ii = size2sup; i < ii; i++) {
+                var iValue = (1.00 - (i*i*(3.00*size2sup - 2.00*i))/(size2sup*size2sup*size2sup));//Math.exp(-Math.PI*i*i/((size2+1)*size2+1))
+                for (var j = 0, jj = size2sup; j < jj; j++) {
+                  var value = iValue*(1.00 - (j*j*(3.00*size2sup - 2.00*j))/(size2sup*size2sup*size2sup));
+                  data[size*(size2inf + j) + size2inf + i] = value;
+                  data[size*(size2inf - j) + size2inf - i] = value;
+                  data[size*(size2inf + i) + size2inf - j] = value;
+                  data[size*(size2inf - i) + size2inf + j] = value;
+                }
+              }
+              data[(size+1)*size2inf] = 1.00;
+              kernel = new gimel.Float32T1ChImage(size, size, data);
+            }
+            return this.convolve(kernel, true);
         }
     });
 
