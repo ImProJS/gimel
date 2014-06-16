@@ -46,8 +46,8 @@ gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
     moduleContent.extend = function(extension) {
         for (var i = 0, ii = moduleContent.structures.length; i < ii; ++i) {
             extension(moduleContent.structures[i],
-                      GimelImage.prototype.DATA_TYPE,
-                      GimelImage.prototype.CHANNELS);
+                      moduleContent.structures[i].prototype.DATA_TYPE,
+                      moduleContent.structures[i].prototype.CHANNELS);
         }
     };
 
