@@ -245,6 +245,27 @@ var gimel = (function() {
     return new Gimel();
 })();
 
+gimel.module('imageTemplate').extend(function(moduleContent) {
+    gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
+        GimelImage.ImageView = function ImageView(image, x, y, width, height) {
+            this.image = image;
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            this.dx = image.dx;
+            this.dy = image.dy;
+        };
+
+        GimelImage.ImageView.prototype.CHANNELS = GimelImage.prototype.CHANNELS;
+        GimelImage.ImageView.prototype.DATA_TYPE = GimelImage.prototype.DATA_TYPE;
+
+        GimelImage.prototype.getImageView = function(x, y, width, height) {
+            return new GimelImage.ImageView(this, x, y, width, height);
+        };
+    });
+});
+
 gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
     moduleContent.dataTypes = {
                                Uint8ClampedT: Uint8ClampedArray, // native default data type of canvas
@@ -279,16 +300,22 @@ gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
             this.length = width*height*channels;
         };
 
-        GimelImage.prototype.CHANNELS = channels;
         GimelImage.prototype.DATA_TYPE = type;
+        GimelImage.prototype.CHANNELS = channels;
 
         moduleContent.structures.push(GimelImage);
         gimel[type + channels + 'ChImage'] = GimelImage;
     };
 
+    /**
+     * Extends the ImageTemplate, ie all the GimelImage with own data type
+     * @param {function} extension the function which shall extend the GimelImage classes
+     */
     moduleContent.extend = function(extension) {
         for (var i = 0, ii = moduleContent.structures.length; i < ii; ++i) {
-            extension(moduleContent.structures[i]);
+            extension(moduleContent.structures[i],
+                      GimelImage.prototype.DATA_TYPE,
+                      GimelImage.prototype.CHANNELS);
         }
     };
 
@@ -301,7 +328,8 @@ gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
 });
 
 gimel.module('imageTemplate').extend(function(moduleContent) {
-    gimel.imageTemplate.extend(function(GimelImage) {
+    gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
+    if (channels === 1) {
         /**
          * Compute the sum of two images (each pixel value)
          * @param {GimelImage} image the given image
@@ -311,10 +339,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var thisData = this.data;
             var srcData = image.data;
 
-            for (var t = 0, tt = image.length; t < tt; t += 4) {
+            for (var t = 0, tt = image.length; t < tt; ++t) {
                 thisData[t] += srcData[t];
-                thisData[t + 1] += srcData[t + 1];
-                thisData[t + 2] += srcData[t + 2];
             }
             return this;
         };
@@ -328,10 +354,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var thisData = this.data;
             var srcData = image.data;
 
-            for (var t = 0, tt = image.length; t < tt; t += 4) {
+            for (var t = 0, tt = image.length; t < tt; ++t) {
                 thisData[t] -= srcData[t];
-                thisData[t + 1] -= srcData[t + 1];
-                thisData[t + 2] -= srcData[t + 2];
             }
             return this;
         };
@@ -345,10 +369,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var thisData = this.data;
             var srcData = image.data;
 
-            for (var t = 0, tt = image.length; t < tt; t += 4) {
+            for (var t = 0, tt = image.length; t < tt; ++t) {
                 thisData[t] *= srcData[t];
-                thisData[t + 1] *= srcData[t + 1];
-                thisData[t + 2] *= srcData[t + 2];
             }
             return this;
         };
@@ -362,10 +384,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var thisData = this.data;
             var srcData = image.data;
 
-            for (var t = 0, tt = image.length; t < tt; t += 4) {
+            for (var t = 0, tt = image.length; t < tt; ++t) {
                 thisData[t] /= srcData[t];
-                thisData[t + 1] /= srcData[t + 1];
-                thisData[t + 2] /= srcData[t + 2];
             }
             return this;
         };
@@ -378,10 +398,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var thisData = this.data;
             var sqrt = Math.sqrt;
 
-            for (var t = 0, tt = this.length; t < tt; t += 4) {
+            for (var t = 0, tt = this.length; t < tt; ++t) {
                 thisData[t] = thisData[t]*thisData[t];
-                thisData[t + 1] = thisData[t + 1]*thisData[t + 1];
-                thisData[t + 2] = thisData[t + 2]*thisData[t + 2];
             }
             return this;
         };
@@ -394,10 +412,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var thisData = this.data;
             var sqrt = Math.sqrt;
 
-            for (var t = 0, tt = this.length; t < tt; t += 4) {
+            for (var t = 0, tt = this.length; t < tt; ++t) {
                 thisData[t] = sqrt(thisData[t]);
-                thisData[t + 1] = sqrt(thisData[t + 1]);
-                thisData[t + 2] = sqrt(thisData[t + 2]);
             }
             return this;
         };
@@ -410,10 +426,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var thisData = this.data;
             var alpha = (destMax - destMin)/(srcMax - srcMin);
 
-            for (var t = 0, tt = this.length; t < tt; t += 4) {
+            for (var t = 0, tt = this.length; t < tt; ++t) {
                 thisData[t] = (thisData[t] - srcMin)*alpha + destMin;
-                thisData[t + 1] = (thisData[t + 1] - srcMin)*alpha + destMin;
-                thisData[t + 2] = (thisData[t + 2] - srcMin)*alpha + destMin;
             }
             return this;
         };
@@ -428,10 +442,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var thisData = this.data;
             var srcData = image.data;
 
-            for (var t = 0, tt = image.length; t < tt; t += 4) {
+            for (var t = 0, tt = image.length; t < tt; ++t) {
                 thisData[t] = srcData[t] < thisData[t] ? srcData[t] : thisData[t];
-                thisData[t] = srcData[t + 1] < thisData[t + 1] ? srcData[t + 1] : thisData[t + 1];
-                thisData[t] = srcData[t + 2] < thisData[t + 2] ? srcData[t + 2] : thisData[t + 2];
             }
             return this;
         };
@@ -445,58 +457,226 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var thisData = this.data;
             var srcData = image.data;
 
-            for (var t = 0, tt = image.length; t < tt; t += 4) {
+            for (var t = 0, tt = image.length; t < tt; ++t) {
                 thisData[t] = srcData[t] > thisData[t] ? srcData[t] : thisData[t];
-                thisData[t] = srcData[t + 1] > thisData[t + 1] ? srcData[t + 1] : thisData[t + 1];
-                thisData[t] = srcData[t + 2] > thisData[t + 2] ? srcData[t + 2] : thisData[t + 2];
             }
             return this;
         };
+    } else if (channels === 4) {
+            /**
+             * Compute the sum of two images (each pixel value)
+             * @param {GimelImage} image the given image
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.add = function(image) {
+                var thisData = this.data;
+                var srcData = image.data;
+
+                for (var t = 0, tt = image.length; t < tt; t += 4) {
+                    thisData[t] += srcData[t];
+                    thisData[t + 1] += srcData[t + 1];
+                    thisData[t + 2] += srcData[t + 2];
+                }
+                return this;
+            };
+
+            /**
+             * Compute the difference of two images (each pixel value)
+             * @param {GimelImage} image the given image
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.subtract = function(image) {
+                var thisData = this.data;
+                var srcData = image.data;
+
+                for (var t = 0, tt = image.length; t < tt; t += 4) {
+                    thisData[t] -= srcData[t];
+                    thisData[t + 1] -= srcData[t + 1];
+                    thisData[t + 2] -= srcData[t + 2];
+                }
+                return this;
+            };
+
+            /**
+             * Compute the multiplication of two images (each pixel value)
+             * @param {GimelImage} image the given image
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.multiply = function(image) {
+                var thisData = this.data;
+                var srcData = image.data;
+
+                for (var t = 0, tt = image.length; t < tt; t += 4) {
+                    thisData[t] *= srcData[t];
+                    thisData[t + 1] *= srcData[t + 1];
+                    thisData[t + 2] *= srcData[t + 2];
+                }
+                return this;
+            };
+
+            /**
+             * Compute the difference of two images (each pixel value)
+             * @param {GimelImage} image the given image
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.divide = function(image) {
+                var thisData = this.data;
+                var srcData = image.data;
+
+                for (var t = 0, tt = image.length; t < tt; t += 4) {
+                    thisData[t] /= srcData[t];
+                    thisData[t + 1] /= srcData[t + 1];
+                    thisData[t + 2] /= srcData[t + 2];
+                }
+                return this;
+            };
+
+            /**
+             * Compute the square of each pixel value
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.square = function() {
+                var thisData = this.data;
+                var sqrt = Math.sqrt;
+
+                for (var t = 0, tt = this.length; t < tt; t += 4) {
+                    thisData[t] = thisData[t]*thisData[t];
+                    thisData[t + 1] = thisData[t + 1]*thisData[t + 1];
+                    thisData[t + 2] = thisData[t + 2]*thisData[t + 2];
+                }
+                return this;
+            };
+
+            /**
+             * Compute the square root of each pixel value
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.sqrt = function() {
+                var thisData = this.data;
+                var sqrt = Math.sqrt;
+
+                for (var t = 0, tt = this.length; t < tt; t += 4) {
+                    thisData[t] = sqrt(thisData[t]);
+                    thisData[t + 1] = sqrt(thisData[t + 1]);
+                    thisData[t + 2] = sqrt(thisData[t + 2]);
+                }
+                return this;
+            };
+
+            /**
+             * Normalize the image values from [srcMin, srcMax] to [destMin, destMax]
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.normalize = function(srcMin, srcMax, destMin, destMax) {
+                var thisData = this.data;
+                var alpha = (destMax - destMin)/(srcMax - srcMin);
+
+                for (var t = 0, tt = this.length; t < tt; t += 4) {
+                    thisData[t] = (thisData[t] - srcMin)*alpha + destMin;
+                    thisData[t + 1] = (thisData[t + 1] - srcMin)*alpha + destMin;
+                    thisData[t + 2] = (thisData[t + 2] - srcMin)*alpha + destMin;
+                }
+                return this;
+            };
+
+
+            /**
+             * Min operator between two images (each pixel value)
+             * @param {GimelImage} image the given image
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.min = function(image) {
+                var thisData = this.data;
+                var srcData = image.data;
+
+                for (var t = 0, tt = image.length; t < tt; t += 4) {
+                    thisData[t] = srcData[t] < thisData[t] ? srcData[t] : thisData[t];
+                    thisData[t + 1] = srcData[t + 1] < thisData[t + 1] ? srcData[t + 1] : thisData[t + 1];
+                    thisData[t + 2] = srcData[t + 2] < thisData[t + 2] ? srcData[t + 2] : thisData[t + 2];
+                }
+                return this;
+            };
+
+            /**
+             * Max operator between two images (each pixel value)
+             * @param {GimelImage} image the given image
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.max = function(image) {
+                var thisData = this.data;
+                var srcData = image.data;
+
+                for (var t = 0, tt = image.length; t < tt; t += 4) {
+                    thisData[t] = srcData[t] > thisData[t] ? srcData[t] : thisData[t];
+                    thisData[t + 1] = srcData[t + 1] > thisData[t + 1] ? srcData[t + 1] : thisData[t + 1];
+                    thisData[t + 2] = srcData[t + 2] > thisData[t + 2] ? srcData[t + 2] : thisData[t + 2];
+                }
+                return this;
+            };
+        }
+        
     });
 
     return false;
 });
 
 gimel.module('imageTemplate').extend(function(moduleContent) {
-    gimel.imageTemplate.extend(function(GimelImage) {
-        /**
-         * Apply the matrix to each pixel vector (r, g, b)
-         * @param {GimelImage} matrix the transformation matrix
-         * @return {GimelImage} this image
-         */
-        GimelImage.prototype.transformChannels = function(matrix) {
-            var matrixData = matrix.data;
-            var data = this.data;
-            for (var t = 0, tt = this.length; t < tt; t += 4) {
-                var r = data[t];
-                var g = data[t + 1];
-                var b = data[t + 2];
-                data[t] = matrixData[0]*r + matrixData[1]*g + matrixData[2]*b; 
-                data[t + 1] = matrixData[3]*r + matrixData[4]*g + matrixData[5]*b; 
-                data[t + 2] = matrixData[6]*r + matrixData[7]*g + matrixData[8]*b; 
-            }
-            return this;
-        };
+    gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
+        if (channels === 4) {
+            /**
+             * Apply the matrix to each pixel vector (r, g, b)
+             * @param {GimelImage} matrix the transformation matrix
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.transformChannels = function(matrix) {
+                var matrixData = matrix.data;
+                var data = this.data;
+                for (var t = 0, tt = this.length; t < tt; t += 4) {
+                    var r = data[t];
+                    var g = data[t + 1];
+                    var b = data[t + 2];
+                    data[t] = matrixData[0]*r + matrixData[1]*g + matrixData[2]*b; 
+                    data[t + 1] = matrixData[3]*r + matrixData[4]*g + matrixData[5]*b; 
+                    data[t + 2] = matrixData[6]*r + matrixData[7]*g + matrixData[8]*b; 
+                }
+                return this;
+            };
 
-        /**
-         * Create an single-channel image form an image channel
-         * @param {GimelImage} matrix the transformation matrix
-         * @return {GimelImage} this image
-         */
-        GimelImage.prototype.getChannel = function(channelIndex) {
-            var image = new GimelImage.T1ChImage(this.width, this.height);
-            var thisData = this.data;
-            var imageData = image.data;
-            for (var t = 0, u = 0, tt = this.length; t < tt; t += 4, ++u) {
-                imageData[u] = thisData[t + channelIndex];
-            }
-            return this;
-        };
+            /**
+             * Create an single-channel image form an image channel
+             * @param {GimelImage} matrix the transformation matrix
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.getChannel = function(channelIndex) {
+                var image = new GimelImage.T1ChImage(this.width, this.height);
+                var thisData = this.data;
+                var imageData = image.data;
+                for (var t = 0, u = 0, tt = this.length; t < tt; t += 4, ++u) {
+                    imageData[u] = thisData[t + channelIndex];
+                }
+                return this;
+            };
+            
+            /**
+             * Set a channel from a mono-channel image
+             * @param {GimelImage} matrix the transformation matrix
+             * @return {GimelImage} this image
+             */
+            GimelImage.prototype.setChannel = function(channelIndex, channelImage) {
+                var image = new GimelImage.T1ChImage(this.width, this.height);
+                var thisData = this.data;
+                var channelData = channelImage.data;
+                for (var t = 0, u = 0, tt = this.length; t < tt; t += 4, ++u) {
+                    thisData[t + channelIndex] = channelData[u];
+                }
+                return this;
+            };
+        }
     });
 });
 
 gimel.module('imageTemplate').extend(function(moduleContent) {
-    gimel.imageTemplate.extend(function(GimelImage) {
+    gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
         /**
          * Convolve the image with the given kernel
          * @param {IntMask} kernel mask (image with one channel)
@@ -644,7 +824,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                                                         -1,  0, +1,
                                                          0, +1,  0]);
             return this.convolve(kernel, false);
-        }
+        };
 
         /**
          * Convolve image with gaussian kernel (blur)
@@ -694,52 +874,178 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
               kernel = new gimel.Float32T1ChImage(size, size, data);
             }
             return this.convolve(kernel, true);
-        }
+        };
+    });
+
+    return false;
+});
+
+
+gimel.module('imageTemplate').extend(function(moduleContent) {
+    gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
+
+        GimelImage.prototype.haar = function(image) {
+            // TODO
+        };
+
+        GimelImage.prototype.fft = function(image) {
+            // TODO
+        };
     });
 
     return false;
 });
 
 gimel.module('imageTemplate').extend(function(moduleContent) {
-    gimel.imageTemplate.extend(function(GimelImage) {
-        /**
-         * Returns the Average pixel value
-         * @return {number[]} the average value
-         */
-        GimelImage.prototype.mean = function() {
-            // TODO
-        };
+    gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
+        if (channels === 1) {
+            /**
+             * Returns the sum of all pixel values
+             * @return {number} the sum
+             */
+            GimelImage.prototype.sum = function() {
+                var data = this.data;
+                var sum = 0;
+                for (var i = 0, ii = this.length; i < ii; ++i) {
+                    sum += data[i];
+                }
+                return sum;
+            };
 
-        /**
-         * Returns the Median pixel value
-         * @return {number[]} the average value
-         */
-        GimelImage.prototype.median = function() {
-            // TODO
-        };
+            /**
+             * Returns the Average pixel value
+             * @return {number[]} the average value
+             */
+            GimelImage.prototype.mean = function() {
+                return this.sum()/this.length;
+            };
 
-        /**
-         * Returns the Variance
-         * @return {number[]} the average value
-         */
-        GimelImage.prototype.variance = function() {
-            // TODO
-        };
+            /**
+             * Returns the Median pixel value
+             * @return {number[]} the average value
+             */
+            GimelImage.prototype.median = function() {
+                // TODO
+            };
 
-        /**
-         * Returns the Mean Squared Error
-         * @return {number[]} the average value
-         */
-        GimelImage.prototype.meanSquaredError = function() {
-            // TODO
-        };
+            /**
+             * Returns the Variance
+             * @return {number[]} the average value
+             */
+            GimelImage.prototype.variance = function() {
+                // TODO
+            };
 
+            /**
+             * Returns the Mean Squared Error
+             * @return {number[]} the average value
+             */
+            GimelImage.prototype.meanSquaredError = function() {
+                // TODO
+            };
+
+        } else if (channels === 4) {
+            if (dataType === 'Float32T' || dataType === 'Float64T') {
+                /**
+                 * Returns the sum of all pixel values
+                 * (Kahan algorithm since we work on floating point data)
+                 * @return {number[]} the average value
+                 */
+                GimelImage.prototype.sum = function() {
+                    var data = this.data;
+                    var sum = new Float64Array(4);
+                    var delta = new Float64Array(4);
+                    var tmp = new Float64Array(4);
+                    var compensedValue = new Float64Array(4);
+                    for (var i = 0, ii = this.length; i < ii; i += 4) {
+                        compensedValue[0] = data[i] - delta[0];
+                        tmp[0] = sum[0] + compensedValue[0];
+                        delta[0] = tmp[0] - sum[0];
+                        delta[0] -= compensedValue[0];
+                        sum[0] += tmp[i];
+                        
+                        compensedValue[1] = data[i + 1] - delta[1];
+                        tmp[1] = sum[1] + compensedValue[1];
+                        delta[1] = tmp[1] - sum[1];
+                        delta[1] -= compensedValue[1];
+                        sum[1] += tmp[1];
+                        
+                        compensedValue[2] = data[i + 2] - delta[2];
+                        tmp[2] = sum[2] + compensedValue[2];
+                        delta[2] = tmp[2] - sum[2];
+                        delta[2] -= compensedValue[2];
+                        sum[2] += tmp[2];
+                    }
+                    return sum;
+                };
+            } else {
+                /**
+                 * Returns the sum of all pixel values
+                 * @return {number[]} the average value
+                 */
+                GimelImage.prototype.sum = function() {
+                    var data = this.data;
+                    var sum = new Int32Array(4);
+                    for (var i = 0, ii = this.length; i < ii; i += 4) {
+                        sum[0] += data[i];
+                        sum[1] += data[i + 1];
+                        sum[2] += data[i + 2];
+                        sum[3] += data[i + 3];
+                    }
+                    return sum;
+                };
+            }
+            
+
+            /**
+             * Returns the Average pixel value
+             * @return {number[]} the average value
+             */
+            GimelImage.prototype.mean = function() {
+                var sum = this.sum();
+                return [sum[0]/this.length, sum[1]/this.length, sum[2]/this.length, sum[3]/this.length];
+            };
+
+            /**
+             * Returns the Median pixel value
+             * @return {number[]} the average value
+             */
+            GimelImage.prototype.median = function() {
+                // TODO
+            };
+
+            /**
+             * Returns the Variance
+             * @return {number[]} the average value
+             */
+            GimelImage.prototype.variance = function() {
+                // TODO
+            };
+
+            /**
+             * Returns the Mean Squared Error
+             * @return {number[]} the average value
+             */
+            GimelImage.prototype.meanSquaredError = function() {
+                // TODO
+            };
+        }
     });
 });
 
 gimel.module('imageTemplate').extend(function(moduleContent) {
-    moduleContent.extend(function(GimelImage) {
-        GimelImage.prototype.T_1CH_IMAGE = gimel[GimelImage.prototype.TYPE + GimelImage.prototype.CHANNELS + 'ChImage'];
+    moduleContent.extend(function(GimelImage, dataType, channels) {
+        if (channels === 4) {
+            /**
+             * The mono-channel version of this GimelImage class (same data type)
+             */
+            GimelImage.prototype.T_1CH_IMAGE = gimel[dataType + '1ChImage'];
+        } else if (channels === 1) {
+            /**
+             * The 4-channel version of this GimelImage class (same data type)
+             */
+            GimelImage.prototype.T_4CH_IMAGE = gimel[dataType + '4ChImage'];
+        }
 
         /**
          * Make an exact copy of an image
@@ -782,7 +1088,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             return this;
         };
 
-        if (GimelImage.prototype.CHANNELS === 1) {
+        if (channels === 1) {
             /**
              * Fill in a channel with a value
              * @param {number} value the value to set to pixels
@@ -795,7 +1101,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 }
                 return this;
             };
-        } else if (GimelImage.prototype.CHANNELS === 4) {
+        } else if (channels === 4) {
             /**
              * Fill in an image with channel values
              * @param {number} ch0 the first channel value
@@ -814,7 +1120,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 }
                 return this;
             };
-            
+
             /**
              * Fill in a channel with a value
              * @param {integer} channel the channel index
@@ -828,8 +1134,16 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 }
                 return this;
             };
+
+            GimelImage.prototype.paste = function(image, x, y) {
+                // TODO
+            };
+
+            GimelImage.prototype.pasteWithMask = function(image, x, y, mask) {
+                // TODO  
+            };
         }
-        
+
     });
 });
 

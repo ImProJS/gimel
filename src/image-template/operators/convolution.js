@@ -147,7 +147,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                                                         -1,  0, +1,
                                                          0, +1,  0]);
             return this.convolve(kernel, false);
-        }
+        };
 
         /**
          * Convolve image with gaussian kernel (blur)
@@ -197,7 +197,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
               kernel = new gimel.Float32T1ChImage(size, size, data);
             }
             return this.convolve(kernel, true);
-        }
+        };
     });
 
     return false;
