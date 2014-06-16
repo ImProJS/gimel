@@ -32,16 +32,22 @@ gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
             this.length = width*height*channels;
         };
 
-        GimelImage.prototype.CHANNELS = channels;
         GimelImage.prototype.DATA_TYPE = type;
+        GimelImage.prototype.CHANNELS = channels;
 
         moduleContent.structures.push(GimelImage);
         gimel[type + channels + 'ChImage'] = GimelImage;
     };
 
+    /**
+     * Extends the ImageTemplate, ie all the GimelImage with own data type
+     * @param {function} extension the function which shall extend the GimelImage classes
+     */
     moduleContent.extend = function(extension) {
         for (var i = 0, ii = moduleContent.structures.length; i < ii; ++i) {
-            extension(moduleContent.structures[i]);
+            extension(moduleContent.structures[i],
+                      GimelImage.prototype.DATA_TYPE,
+                      GimelImage.prototype.CHANNELS);
         }
     };
 

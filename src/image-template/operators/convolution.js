@@ -1,5 +1,5 @@
 gimel.module('imageTemplate').extend(function(moduleContent) {
-    gimel.imageTemplate.extend(function(GimelImage) {
+    gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
         /**
          * Convolve the image with the given kernel
          * @param {IntMask} kernel mask (image with one channel)
@@ -147,7 +147,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                                                         -1,  0, +1,
                                                          0, +1,  0]);
             return this.convolve(kernel, false);
-        }
+        };
 
         /**
          * Convolve image with gaussian kernel (blur)
@@ -179,7 +179,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                                                                0.02, 0.06, 0.11, 0.14, 0.11, 0.06, 0.02]);
               break;
             default: 
-              var size2 = (size - 1) >> 1
+              var size2 = (size - 1) >> 1;
               var data = [];
               for (i = 1, ii = size2 + 1; i < ii; i++) {
                 for (j = 0, jj = size2 + 1; j < jj; j++) {
@@ -196,7 +196,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
               }
             }
             return this.convolve(kernel, true);
-        }
+        };
     });
 
     return false;

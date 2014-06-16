@@ -1,6 +1,16 @@
 gimel.module('imageTemplate').extend(function(moduleContent) {
-    moduleContent.extend(function(GimelImage) {
-        GimelImage.prototype.T_1CH_IMAGE = gimel[GimelImage.prototype.TYPE + GimelImage.prototype.CHANNELS + 'ChImage'];
+    moduleContent.extend(function(GimelImage, dataType, channels) {
+        if (channels === 4) {
+            /**
+             * The mono-channel version of this GimelImage class (same data type)
+             */
+            GimelImage.prototype.T_1CH_IMAGE = gimel[dataType + '1ChImage'];
+        } else if (channels === 1) {
+            /**
+             * The 4-channel version of this GimelImage class (same data type)
+             */
+            GimelImage.prototype.T_4CH_IMAGE = gimel[dataType + '4ChImage'];
+        }
 
         /**
          * Make an exact copy of an image
@@ -43,7 +53,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             return this;
         };
 
-        if (GimelImage.prototype.CHANNELS === 1) {
+        if (channels === 1) {
             /**
              * Fill in a channel with a value
              * @param {number} value the value to set to pixels
@@ -56,7 +66,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 }
                 return this;
             };
-        } else if (GimelImage.prototype.CHANNELS === 4) {
+        } else if (channels === 4) {
             /**
              * Fill in an image with channel values
              * @param {number} ch0 the first channel value
@@ -75,7 +85,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 }
                 return this;
             };
-            
+
             /**
              * Fill in a channel with a value
              * @param {integer} channel the channel index
@@ -89,8 +99,16 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 }
                 return this;
             };
+
+            GimelImage.prototype.paste = function(image, x, y) {
+                // TODO
+            };
+
+            GimelImage.prototype.pasteWithMask = function(image, x, y, mask) {
+                // TODO  
+            };
         }
-        
+
     });
 });
 
