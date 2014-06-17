@@ -314,8 +314,8 @@ gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
     moduleContent.extend = function(extension) {
         for (var i = 0, ii = moduleContent.structures.length; i < ii; ++i) {
             extension(moduleContent.structures[i],
-                      GimelImage.prototype.DATA_TYPE,
-                      GimelImage.prototype.CHANNELS);
+                      moduleContent.structures[i].prototype.DATA_TYPE,
+                      moduleContent.structures[i].prototype.CHANNELS);
         }
     };
 
@@ -705,9 +705,9 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var xx2 = xx - uu2;
             var yy2 = yy - vv2;
 
-            var srcX, srcY;
-            var u, v, x, y;
-            var muv, offset;
+            var srcX = 0, srcY = 0;
+            var u = 0, v = 0, x = 0, y = 0;
+            var muv = 0, offset = 0;
 
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {
@@ -722,6 +722,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                             destData[tSrc] += srcData[t]*muv;
                             destData[tSrc + 1] += srcData[t + 1]*muv;
                             destData[tSrc + 2] += srcData[t + 2]*muv;
+                            
                         }
                     }
 
@@ -737,7 +738,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                             destData[tSrc + 2] += srcData[t + 2]*muv;
                         }
                     }
-
+                    
                     // Left strip
                     for (y = vv2; y < yy2; ++y) {
                         for (x = 0; x < uu2; ++x) {
@@ -750,7 +751,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                             destData[tSrc + 2] += srcData[t + 2]*muv;
                         }
                     }
-
+                    
                     // Right strip
                     for (y = 0; y < yy2; ++y) {
                         for (x = xx2; x < xx; ++x) {
@@ -778,7 +779,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                     }
                 }
             }
-
+            
             // Center
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {

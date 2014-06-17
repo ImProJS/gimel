@@ -8,8 +8,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
          * @todo handle the sides
          */
         GimelImage.prototype.convolve = function(kernel, normalize) {
-            console.assert(kernel.CHANNELS === 1, 'AbstractImage::convolve: Mask must have just one channel');
-            console.assert(kernel.width === kernel.height, 'AbstractImage::convolve: Mask must be square');
+            gimel.debug && console.assert(kernel.CHANNELS === 1, 'AbstractImage::convolve: Mask must have just one channel');
+            gimel.debug && console.assert(kernel.width === kernel.height, 'AbstractImage::convolve: Mask must be square');
 
             var convolvedImage = this.cloneStructure();
             var destData = convolvedImage.data;
@@ -28,9 +28,9 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var xx2 = xx - uu2;
             var yy2 = yy - vv2;
 
-            var srcX, srcY;
-            var u, v, x, y;
-            var muv, offset;
+            var srcX = 0, srcY = 0;
+            var u = 0, v = 0, x = 0, y = 0;
+            var muv = 0, offset = 0;
 
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {
@@ -45,6 +45,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                             destData[tSrc] += srcData[t]*muv;
                             destData[tSrc + 1] += srcData[t + 1]*muv;
                             destData[tSrc + 2] += srcData[t + 2]*muv;
+                            
                         }
                     }
 
@@ -60,7 +61,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                             destData[tSrc + 2] += srcData[t + 2]*muv;
                         }
                     }
-
+                    
                     // Left strip
                     for (y = vv2; y < yy2; ++y) {
                         for (x = 0; x < uu2; ++x) {
@@ -73,7 +74,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                             destData[tSrc + 2] += srcData[t + 2]*muv;
                         }
                     }
-
+                    
                     // Right strip
                     for (y = 0; y < yy2; ++y) {
                         for (x = xx2; x < xx; ++x) {
@@ -101,7 +102,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                     }
                 }
             }
-
+            
             // Center
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {
@@ -157,8 +158,8 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
          * @todo kernel type according to image type (int or float)
          */
         GimelImage.prototype.gaussian = function(size) {
-            console.assert(size & 1,  'AbstractImage::gaussian: Size has to be odd');
-            console.assert(size >= 3, 'AbstractImage::gaussian: Size has to be at least 3');
+            gimel.debug && console.assert(size & 1,  'AbstractImage::gaussian: Size has to be odd');
+            gimel.debug && console.assert(size >= 3, 'AbstractImage::gaussian: Size has to be at least 3');
             var kernel;
             switch (size) {
             case 3: kernel = new gimel.Float32T1ChImage(3, 3, [0.25, 0.50, 0.25,
