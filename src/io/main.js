@@ -2,10 +2,10 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
     gimel.CanvasImage = function CanvasImage(width, height, canvasDomElement) {
         if (canvasDomElement === undefined) {
             canvasDomElement = document.createElement('canvas');
-            canvasDomElement.width = imageDomElement.width;
-            canvasDomElement.height = imageDomElement.height;
+            canvasDomElement.width = width;
+            canvasDomElement.height = height;
         }
-
+    
         var context = canvasDomElement.getContext('2d');
         var canvasData = context.getImageData(0, 0, canvasDomElement.width, canvasDomElement.height);
         gimel.Uint8ClampedT4ChImage.call(this,
@@ -64,7 +64,7 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
      * @param {fucntion} callback the function to call when the image is opened
      */
     moduleContent.imageFromFile = function(path, callback) {
-        var domElementImage = new Image();
+        var domElementImage = new window.Image();
         domElementImage.addEventListener('load', function() {
             var htmlImage = moduleContent.imageFromDomImage(domElementImage);
             callback(htmlImage);
@@ -90,7 +90,7 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
             canvasImage = image;
         }
         canvasImage.updateCanvasData();
-        return canvasImage.canvasDomElement.toDataURL("image/png");
+        return canvasImage.canvasDomElement.toDataURL('image/png');
     };
 
     /**
@@ -99,7 +99,7 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
      * @return {Image} the DOM image Element
      */
     moduleContent.imageToDomImage = function(image) {
-        var imageDomElement = new Image();
+        var imageDomElement = new window.Image();
         imageDomElement.src = moduleContent.imageToDataURL(image);
         return imageDomElement;
     };

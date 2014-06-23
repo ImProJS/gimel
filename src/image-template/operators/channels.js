@@ -21,7 +21,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             };
 
             /**
-             * Create an single-channel image form an image channel
+             * Create an single-channel image from an image channel
              * @param {GimelImage} matrix the transformation matrix
              * @return {GimelImage} this image
              */
@@ -41,7 +41,6 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
              * @return {GimelImage} this image
              */
             GimelImage.prototype.setChannel = function(channelIndex, channelImage) {
-                var image = new GimelImage.T1ChImage(this.width, this.height);
                 var thisData = this.data;
                 var channelData = channelImage.data;
                 for (var t = 0, u = 0, tt = this.length; t < tt; t += 4, ++u) {

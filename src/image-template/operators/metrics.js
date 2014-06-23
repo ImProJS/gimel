@@ -93,10 +93,10 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                  */
                 GimelImage.prototype.sum = function() {
                     var data = this.data;
-                    var sum = new Float64Array(4);
-                    var delta = new Float64Array(4);
-                    var tmp = new Float64Array(4);
-                    var compensedValue = new Float64Array(4);
+                    var sum = new window.Float64Array(4);
+                    var delta = new window.Float64Array(4);
+                    var tmp = new window.Float64Array(4);
+                    var compensedValue = new window.Float64Array(4);
                     for (var i = 0, ii = this.length; i < ii; i += 4) {
                         compensedValue[0] = data[i] - delta[0];
                         tmp[0] = sum[0] + compensedValue[0];
@@ -161,10 +161,10 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
              */
             GimelImage.prototype.variance = function() {
                 var data = this.data;
-                var variance = new Float64Array(4);
-                var delta = new Float64Array(4);
-                var tmp = new Float64Array(4);
-                var compensedValue = new Float64Array(4);
+                var variance = new window.Float64Array(4);
+                var delta = new window.Float64Array(4);
+                var tmp = new window.Float64Array(4);
+                var compensedValue = new window.Float64Array(4);
                 var mean = this.mean();
                 for (var i = 0, ii = this.length; i < ii; i += 4) {
                     tmp[0] = data[i] - mean[0];
@@ -199,6 +199,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
              * @return {number[]} the average value
              */
             GimelImage.prototype.meanSquaredError = function() {
+                
                 // TODO
             };
         }

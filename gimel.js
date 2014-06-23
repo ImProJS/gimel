@@ -1,6 +1,6 @@
 'use strict';
 
-var gimel = (function() {
+this.gimel = (function() {
     var Gimel = function Gimel() {
         this.utils = {
                       /**
@@ -263,18 +263,22 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
         GimelImage.prototype.getImageView = function(x, y, width, height) {
             return new GimelImage.ImageView(this, x, y, width, height);
         };
+
+        GimelImage.ImageView.prototype.getImageView = function(x, y, width, height) {
+            return new GimelImage.ImageView(this.image, this.x + x, this.y + y, width, height);
+        };
     });
 });
 
 gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
     moduleContent.dataTypes = {
-                               Uint8ClampedT: Uint8ClampedArray, // native default data type of canvas
-                               Uint8T: Uint8Array,
-                               Uint32T: Uint32Array,
-                               Int8T: Int8Array,
-                               Int32T: Int32Array,
-                               Float32T: Float32Array,
-                               Float64T: Float64Array
+                               Uint8ClampedT: window.Uint8ClampedArray, // native default data type of canvas
+                               Uint8T: window.Uint8Array,
+                               Uint32T: window.Uint32Array,
+                               Int8T: window.Int8Array,
+                               Int32T: window.Int32Array,
+                               Float32T: window.Float32Array,
+                               Float64T: window.Float64Array
     };
 
     moduleContent.structures = [];
@@ -396,7 +400,6 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
          */
         GimelImage.prototype.square = function() {
             var thisData = this.data;
-            var sqrt = Math.sqrt;
 
             for (var t = 0, tt = this.length; t < tt; ++t) {
                 thisData[t] *= thisData[t];
@@ -537,7 +540,6 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
              */
             GimelImage.prototype.square = function() {
                 var thisData = this.data;
-                var sqrt = Math.sqrt;
 
                 for (var t = 0, tt = this.length; t < tt; t += 4) {
                     thisData[t] *= thisData[t];
@@ -643,7 +645,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             };
 
             /**
-             * Create an single-channel image form an image channel
+             * Create an single-channel image from an image channel
              * @param {GimelImage} matrix the transformation matrix
              * @return {GimelImage} this image
              */
@@ -663,7 +665,6 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
              * @return {GimelImage} this image
              */
             GimelImage.prototype.setChannel = function(channelIndex, channelImage) {
-                var image = new GimelImage.T1ChImage(this.width, this.height);
                 var thisData = this.data;
                 var channelData = channelImage.data;
                 for (var t = 0, u = 0, tt = this.length; t < tt; t += 4, ++u) {
@@ -691,23 +692,23 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var convolvedImage = this.cloneStructure();
             var destData = convolvedImage.data;
             var srcData = this.data;
-            var t = 0, tt = 0, tSrc = 0;
+            var t = 0|0, tt = 0|0, tSrc = 0|0;
 
-            var uu = kernel.width;
-            var vv = kernel.height;
+            var uu = kernel.width|0;
+            var vv = kernel.height|0;
             var uu2 = kernel.width >> 1;
             var vv2 = kernel.height >> 1;
 
-            var dx = this.dx;
-            var dy = this.dy;
-            var xx = this.width;
-            var yy = this.height;
+            var dx = this.dx|0;
+            var dy = this.dy|0;
+            var xx = this.width|0;
+            var yy = this.height|0;
             var xx2 = xx - uu2;
             var yy2 = yy - vv2;
 
-            var srcX = 0, srcY = 0;
-            var u = 0, v = 0, x = 0, y = 0;
-            var muv = 0, offset = 0;
+            var srcX = 0|0, srcY = 0|0;
+            var u = 0|0, v = 0|0, x = 0|0, y = 0|0;
+            var muv = 0|0, offset = 0|0;
 
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {
@@ -992,10 +993,10 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                  */
                 GimelImage.prototype.sum = function() {
                     var data = this.data;
-                    var sum = new Float64Array(4);
-                    var delta = new Float64Array(4);
-                    var tmp = new Float64Array(4);
-                    var compensedValue = new Float64Array(4);
+                    var sum = new window.Float64Array(4);
+                    var delta = new window.Float64Array(4);
+                    var tmp = new window.Float64Array(4);
+                    var compensedValue = new window.Float64Array(4);
                     for (var i = 0, ii = this.length; i < ii; i += 4) {
                         compensedValue[0] = data[i] - delta[0];
                         tmp[0] = sum[0] + compensedValue[0];
@@ -1060,10 +1061,10 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
              */
             GimelImage.prototype.variance = function() {
                 var data = this.data;
-                var variance = new Float64Array(4);
-                var delta = new Float64Array(4);
-                var tmp = new Float64Array(4);
-                var compensedValue = new Float64Array(4);
+                var variance = new window.Float64Array(4);
+                var delta = new window.Float64Array(4);
+                var tmp = new window.Float64Array(4);
+                var compensedValue = new window.Float64Array(4);
                 var mean = this.mean();
                 for (var i = 0, ii = this.length; i < ii; i += 4) {
                     tmp[0] = data[i] - mean[0];
@@ -1098,6 +1099,7 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
              * @return {number[]} the average value
              */
             GimelImage.prototype.meanSquaredError = function() {
+                
                 // TODO
             };
         }
@@ -1140,7 +1142,6 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
          * @return {GimelImage} this image
          */
         GimelImage.prototype.from = function(image) {
-            var convertedImage = new GimelImage(image.width, image.height);
             var dataSrc = image.data;
             var dataDest = this.data;
             for (var t = 0, tt = image.length; t < tt; ++t) {
@@ -1206,12 +1207,50 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 return this;
             };
 
+            /**
+             * Paste an image on another one
+             * @param {GimelImage} image the image to paste
+             * @param {integer} x the x-position of the pasted image
+             * @param {integer} y the y-position of the pasted image
+             * @return {GimelImage} this image
+             */
             GimelImage.prototype.paste = function(image, x, y) {
-                // TODO
+                var destWidth = this.width, srcWidth = image.width,
+                dataSrc = image.data, dataDest = this.data;
+                var channels = this.CHANNELS;
+                for (var ySrc = 0, yy = image.height; y < yy; ++y) {
+                    var tmpDest = (y + ySrc)*destWidth,
+                        tmpSrc = ySrc*srcWidth;
+                    for (var xSrc = 0, xx = image.width; x < xx; ++x) {
+                        dataDest[(tmpDest + (x + xSrc))*channels] = dataSrc[(tmpSrc + xSrc)*channels];
+                    }
+                }
+
+                return this;
             };
 
+            /**
+             * Paste an image on another one with a mask
+             * @param {GimelImage} image the image to paste
+             * @param {integer} x the x-position of the pasted image
+             * @param {integer} y the y-position of the pasted image
+             * @param {GimelImage} mask a 1-channel-image corresponding to the mask
+             * @return {GimelImage} this image
+             */
             GimelImage.prototype.pasteWithMask = function(image, x, y, mask) {
-                // TODO  
+                var destWidth = this.width, srcWidth = image.width,
+                dataSrc = image.data, dataDest = this.data;
+                var channels = this.CHANNELS;
+                for (var ySrc = 0, yy = image.height; y < yy; ++y) {
+                    var tmpDest = (y + ySrc)*destWidth,
+                        tmpSrc = ySrc*srcWidth;
+                    for (var xSrc = 0, xx = image.width; x < xx; ++x) {
+                        tmpSrc = (tmpSrc + xSrc)*channels;
+                        dataDest[(tmpDest + (x + xSrc))*channels] = dataSrc[tmpSrc]*mask[tmpSrc];
+                    }
+                }
+
+                return this;
             };
         }
 
@@ -1220,14 +1259,57 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
 
 
 
+gimel.module('io').extend(function(moduleContent) {
+    window.requestAnimationFrame =
+        window.requestAnimationFrame || 
+        window.webkitRequestAnimationFrame || 
+        window.mozRequestAnimationFrame || 
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame;
+
+    window.navigator.getUserMedia =
+        window.navigator.getUserMedia ||
+        window.navigator.mozGetUserMedia ||
+        window.navigator.webkitGetUserMedia ||
+        window.navigator.msGetUserMedia;
+
+    /**
+     * Open an image at the given path as a Gimel image
+     * @param {String} path the image path
+     * @param {fucntion} callback the function to call when the image is opened
+     */
+    moduleContent.imageFromCamera = function(path, width, height, callback) {
+        var domElementImage = new window.Image();
+        domElementImage.addEventListener('load', function() {
+            var htmlImage = moduleContent.imageFromDomImage(domElementImage);
+            callback(htmlImage);
+        }, false);
+        domElementImage.src = path;
+    };
+
+    /**
+     * Open an image at the given path as a Gimel image
+     * @param {String} path the image path
+     * @param {fucntion} callback the function to call when the image is opened
+     */
+    moduleContent.imageStreamFromCamera = function(path, width, height, callback) {
+        var domElementImage = new window.Image();
+        domElementImage.addEventListener('load', function() {
+            var htmlImage = moduleContent.imageFromDomImage(domElementImage);
+            callback(htmlImage);
+        }, false);
+        domElementImage.src = path;
+    };
+});
+
 gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) {
     gimel.CanvasImage = function CanvasImage(width, height, canvasDomElement) {
         if (canvasDomElement === undefined) {
             canvasDomElement = document.createElement('canvas');
-            canvasDomElement.width = imageDomElement.width;
-            canvasDomElement.height = imageDomElement.height;
+            canvasDomElement.width = width;
+            canvasDomElement.height = height;
         }
-
+    
         var context = canvasDomElement.getContext('2d');
         var canvasData = context.getImageData(0, 0, canvasDomElement.width, canvasDomElement.height);
         gimel.Uint8ClampedT4ChImage.call(this,
@@ -1286,7 +1368,7 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
      * @param {fucntion} callback the function to call when the image is opened
      */
     moduleContent.imageFromFile = function(path, callback) {
-        var domElementImage = new Image();
+        var domElementImage = new window.Image();
         domElementImage.addEventListener('load', function() {
             var htmlImage = moduleContent.imageFromDomImage(domElementImage);
             callback(htmlImage);
@@ -1312,7 +1394,7 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
             canvasImage = image;
         }
         canvasImage.updateCanvasData();
-        return canvasImage.canvasDomElement.toDataURL("image/png");
+        return canvasImage.canvasDomElement.toDataURL('image/png');
     };
 
     /**
@@ -1321,7 +1403,7 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
      * @return {Image} the DOM image Element
      */
     moduleContent.imageToDomImage = function(image) {
-        var imageDomElement = new Image();
+        var imageDomElement = new window.Image();
         imageDomElement.src = moduleContent.imageToDataURL(image);
         return imageDomElement;
     };

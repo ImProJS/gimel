@@ -16,5 +16,9 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
         GimelImage.prototype.getImageView = function(x, y, width, height) {
             return new GimelImage.ImageView(this, x, y, width, height);
         };
+
+        GimelImage.ImageView.prototype.getImageView = function(x, y, width, height) {
+            return new GimelImage.ImageView(this.image, this.x + x, this.y + y, width, height);
+        };
     });
 });

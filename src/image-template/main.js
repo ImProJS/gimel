@@ -1,12 +1,12 @@
 gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
     moduleContent.dataTypes = {
-                               Uint8ClampedT: Uint8ClampedArray, // native default data type of canvas
-                               Uint8T: Uint8Array,
-                               Uint32T: Uint32Array,
-                               Int8T: Int8Array,
-                               Int32T: Int32Array,
-                               Float32T: Float32Array,
-                               Float64T: Float64Array
+                               Uint8ClampedT: window.Uint8ClampedArray, // native default data type of canvas
+                               Uint8T: window.Uint8Array,
+                               Uint32T: window.Uint32Array,
+                               Int8T: window.Int8Array,
+                               Int32T: window.Int32Array,
+                               Float32T: window.Float32Array,
+                               Float64T: window.Float64Array
     };
 
     moduleContent.structures = [];

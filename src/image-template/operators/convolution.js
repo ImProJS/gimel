@@ -14,23 +14,23 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
             var convolvedImage = this.cloneStructure();
             var destData = convolvedImage.data;
             var srcData = this.data;
-            var t = 0, tt = 0, tSrc = 0;
+            var t = 0|0, tt = 0|0, tSrc = 0|0;
 
-            var uu = kernel.width;
-            var vv = kernel.height;
+            var uu = kernel.width|0;
+            var vv = kernel.height|0;
             var uu2 = kernel.width >> 1;
             var vv2 = kernel.height >> 1;
 
-            var dx = this.dx;
-            var dy = this.dy;
-            var xx = this.width;
-            var yy = this.height;
+            var dx = this.dx|0;
+            var dy = this.dy|0;
+            var xx = this.width|0;
+            var yy = this.height|0;
             var xx2 = xx - uu2;
             var yy2 = yy - vv2;
 
-            var srcX = 0, srcY = 0;
-            var u = 0, v = 0, x = 0, y = 0;
-            var muv = 0, offset = 0;
+            var srcX = 0|0, srcY = 0|0;
+            var u = 0|0, v = 0|0, x = 0|0, y = 0|0;
+            var muv = 0|0, offset = 0|0;
 
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {

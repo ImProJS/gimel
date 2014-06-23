@@ -24,13 +24,20 @@ module.exports = function(grunt) {
         jshint: {
             files: ['Gruntfile.js', 'src/*.js', 'src/**/*.js', 'test/**/*.js'],
             options: {
-                // options here to override JSHint defaults
-                globals: {
-                    console: true,
-                    module: true,
-                    document: true,
-                    gimel: true
-                }
+		    undef: true,
+		    unused: 'vars',
+		    latedef: true,
+		    eqeqeq: true,
+		    quotmark: 'single',
+		    nonbsp: true,
+		    predef: ['gimel'],
+		    globals: {
+			window: true,
+			console: true,
+			module: true,
+			document: true,
+			gimel: true,
+		    }
             }
         },
         jsdoc : {

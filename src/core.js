@@ -1,4 +1,4 @@
-var gimel = (function() {
+this.gimel = (function() {
     var Gimel = function Gimel() {
         this.utils = {
                       /**

@@ -34,7 +34,6 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
          * @return {GimelImage} this image
          */
         GimelImage.prototype.from = function(image) {
-            var convertedImage = new GimelImage(image.width, image.height);
             var dataSrc = image.data;
             var dataDest = this.data;
             for (var t = 0, tt = image.length; t < tt; ++t) {
@@ -100,12 +99,50 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 return this;
             };
 
+            /**
+             * Paste an image on another one
+             * @param {GimelImage} image the image to paste
+             * @param {integer} x the x-position of the pasted image
+             * @param {integer} y the y-position of the pasted image
+             * @return {GimelImage} this image
+             */
             GimelImage.prototype.paste = function(image, x, y) {
-                // TODO
+                var destWidth = this.width, srcWidth = image.width,
+                dataSrc = image.data, dataDest = this.data;
+                var channels = this.CHANNELS;
+                for (var ySrc = 0, yy = image.height; y < yy; ++y) {
+                    var tmpDest = (y + ySrc)*destWidth,
+                        tmpSrc = ySrc*srcWidth;
+                    for (var xSrc = 0, xx = image.width; x < xx; ++x) {
+                        dataDest[(tmpDest + (x + xSrc))*channels] = dataSrc[(tmpSrc + xSrc)*channels];
+                    }
+                }
+
+                return this;
             };
 
+            /**
+             * Paste an image on another one with a mask
+             * @param {GimelImage} image the image to paste
+             * @param {integer} x the x-position of the pasted image
+             * @param {integer} y the y-position of the pasted image
+             * @param {GimelImage} mask a 1-channel-image corresponding to the mask
+             * @return {GimelImage} this image
+             */
             GimelImage.prototype.pasteWithMask = function(image, x, y, mask) {
-                // TODO  
+                var destWidth = this.width, srcWidth = image.width,
+                dataSrc = image.data, dataDest = this.data;
+                var channels = this.CHANNELS;
+                for (var ySrc = 0, yy = image.height; y < yy; ++y) {
+                    var tmpDest = (y + ySrc)*destWidth,
+                        tmpSrc = ySrc*srcWidth;
+                    for (var xSrc = 0, xx = image.width; x < xx; ++x) {
+                        tmpSrc = (tmpSrc + xSrc)*channels;
+                        dataDest[(tmpDest + (x + xSrc))*channels] = dataSrc[tmpSrc]*mask[tmpSrc];
+                    }
+                }
+
+                return this;
             };
         }
 

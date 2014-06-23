@@ -67,7 +67,6 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
          */
         GimelImage.prototype.square = function() {
             var thisData = this.data;
-            var sqrt = Math.sqrt;
 
             for (var t = 0, tt = this.length; t < tt; ++t) {
                 thisData[t] *= thisData[t];
@@ -208,7 +207,6 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
              */
             GimelImage.prototype.square = function() {
                 var thisData = this.data;
-                var sqrt = Math.sqrt;
 
                 for (var t = 0, tt = this.length; t < tt; t += 4) {
                     thisData[t] *= thisData[t];
