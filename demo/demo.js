@@ -1,8 +1,9 @@
 gimel.init();
 
+var workingImage = null;
 gimel.io.imageFromFile('samples/sample1.png', function(image) {
 
-    var workingImage = new gimel.Float32T4ChImage(image.width, image.height);
+    workingImage = new gimel.Float32T4ChImage(image.width, image.height);
     workingImage.from(image);
 
     workingImage.square();
