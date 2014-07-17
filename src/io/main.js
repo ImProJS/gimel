@@ -9,8 +9,9 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
         var context = canvasDomElement.getContext('2d');
         var canvasData = context.getImageData(0, 0, canvasDomElement.width, canvasDomElement.height);
         gimel.Uint8ClampedT4ChImage.call(this,
-                                         canvasDomElement.width, canvasDomElement.height, canvasData.data
+                                         canvasDomElement.width, canvasDomElement.height, canvasData.data, true
         );
+        this.canvasContext = context;
         this.canvasData = canvasData;
         this.canvasDomElement = canvasDomElement;
     };
@@ -22,7 +23,16 @@ gimel.defineModule('io', ['imageTemplate'], function(moduleContent, extensions) 
      * @param {HTMLCanvasElement} canvasDomElement the canvas DOM Element
      */
     gimel.CanvasImage.prototype.updateCanvasData = function() {
-        this.paintOnCanvas(this.canvasDomElement);
+        this.canvasContext.putImageData(this.canvasData, 0, 0);
+    };
+
+    /**
+     * Paint an image on a canvas DOM Element
+     * @param {HTMLCanvasElement} canvasDomElement the canvas DOM Element
+     */
+    gimel.CanvasImage.prototype.updateFromCanvas = function() {
+        this.canvasData = this.canvasContext.getImageData(0, 0, this.width, this.height);
+        this.data = this.canvasData.data;
     };
 
     /**

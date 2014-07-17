@@ -2,35 +2,39 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
     gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
         /**
          * Convolve the image with the given kernel
+         * @param {GimelImage} destImage the destination image
          * @param {IntMask} kernel mask (image with one channel)
          * @param {boolean} normalize 
          * @return {GimelImage} convolved image
          * @todo handle the sides
          */
-        GimelImage.prototype.convolve = function(kernel, normalize) {
+        GimelImage.prototype.convolveTo = function(destImage, kernel, normalize) {
+            if (destImage === this) {
+                return this.convolve(kernel, normalize);
+            }
+                
             void (gimel.debug && console.assert(kernel.CHANNELS === 1, 'AbstractImage::convolve: Mask must have just one channel'));
             void (gimel.debug && console.assert(kernel.width === kernel.height, 'AbstractImage::convolve: Mask must be square'));
 
-            var convolvedImage = this.cloneStructure();
-            var destData = convolvedImage.data;
+            var destData = destImage.data;
             var srcData = this.data;
-            var t = 0|0, tt = 0|0, tSrc = 0|0;
+            var t = 0, tt = 0, tSrc = 0;
 
-            var uu = kernel.width|0;
-            var vv = kernel.height|0;
+            var uu = kernel.width;
+            var vv = kernel.height;
             var uu2 = kernel.width >> 1;
             var vv2 = kernel.height >> 1;
 
-            var dx = this.dx|0;
-            var dy = this.dy|0;
-            var xx = this.width|0;
-            var yy = this.height|0;
+            var dx = this.dx;
+            var dy = this.dy;
+            var xx = this.width;
+            var yy = this.height;
             var xx2 = xx - uu2;
             var yy2 = yy - vv2;
 
-            var srcX = 0|0, srcY = 0|0;
-            var u = 0|0, v = 0|0, x = 0|0, y = 0|0;
-            var muv = 0|0, offset = 0|0;
+            var srcX = 0, srcY = 0;
+            var u = 0, v = 0, x = 0, y = 0;
+            var muv = 0, offset = 0;
 
             for (v = 0; v < vv; ++v) {
                 for (u = 0; u < uu; ++u) {
@@ -135,7 +139,32 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
                 }
             }
 
-            return convolvedImage;
+            return this;
+        };
+
+        /**
+         * Convolve the image with the given kernel
+         * @param {IntMask} kernel mask (image with one channel)
+         * @param {boolean} normalize 
+         * @return {GimelImage} convolved image
+         * @todo handle the sides
+         */
+        GimelImage.prototype.convolve = function(kernel, normalize) {
+            var destImage = this.cloneStructure();
+            this.convolveTo(destImage, kernel, normalize);
+            return this.set(destImage);
+        };
+
+        /**
+         * Compute image gradient using convolution
+         * @return {GimelImage} Gradient image (new)
+         * @todo kernel type according to image type (int or float)
+         */
+        GimelImage.prototype.gradientTo = function(destImage) {
+            var kernel = new gimel.Int8T1ChImage(3, 3, [ 0, -1,  0,
+                                                        -1,  0, +1,
+                                                         0, +1,  0]);
+            return this.convolveTo(destImage, kernel, false);
         };
 
         /**
@@ -145,9 +174,32 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
          */
         GimelImage.prototype.gradient = function() {
             var kernel = new gimel.Int8T1ChImage(3, 3, [ 0, -1,  0,
-                                                        -1,  0, +1,
-                                                         0, +1,  0]);
-            return this.convolve(kernel, false);
+                                                         -1,  0, +1,
+                                                          0, +1,  0]);
+             return this.convolve(kernel, false);
+        };
+
+        /**
+         * Compute image Sobel filter
+         * @return {GimelImage} Gradient image (new)
+         * @todo kernel type according to image type (int or float)
+         */
+        GimelImage.prototype.sobel = function() {
+            var dxKernel = new this.T_1CH_IMAGE(3, 3, [-1, 0, 1,
+                                                       -2, 0, 2,
+                                                       -1, 0, 1]);
+            var dyKernel = new this.T_1CH_IMAGE(3, 3, [-1, -2, -1,
+                                                        0,  0,  0,
+                                                        1,  2,  1]);
+            var dxImage = this.cloneStructure();
+            var dyImage = this.cloneStructure();
+            this.convolveTo(dxImage, dxKernel, false);
+            this.convolveTo(dyImage, dyKernel, false);
+            dxImage.square();
+            dyImage.square();
+            this.set(dxImage);
+            this.add(dyImage);
+            return this.sqrt();
         };
 
         /**

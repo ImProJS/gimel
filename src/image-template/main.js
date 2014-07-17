@@ -20,12 +20,17 @@ gimel.defineModule('imageTemplate', [], function(moduleContent, extensions) {
          * @param {integer} height
          * @param {TypedArray} data
          */
-        var GimelImage = function GimelImage(width, height, data) {
+        var GimelImage = function GimelImage(width, height, data, sharedData) {
+            sharedData = sharedData !== undefined && sharedData;
             this.width = width;
             this.height = height;
-            this.data = new ArrayContructor(width*height*channels);
-            if (data !== undefined) {
-                this.data.set(data);
+            if (sharedData) {
+                this.data = data;
+            } else {
+                this.data = new ArrayContructor(width*height*channels);
+                if (data !== undefined) {
+                    this.data.set(data);
+                }    
             }
             this.dx = channels;
             this.dy = width*channels;
