@@ -1,13 +1,37 @@
 gimel.module('imageTemplate').extend(function(moduleContent) {
 	gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
-		var energyFunction;
-		var energyMap;
+		/*var energyFunction;
+		var energyMap;*/
 
-		GimelImage.prototype.retarget = function(xDiff, yDiff, protectMask, removeMask) {
+		GimelImage.prototype.retarget = function(width, height, protectMask, removeMask) {/*
+			var directions {
+				X: 'X', 
+				Y: 'Y'
+			};
+
 			var retargeted = this.clone();
 
-			// If xDiff != 0 and yDiff != 0, we choose the direction where the seam has the minimum energy 
-			if (xDiff)
+			var diffs = {
+				X: width  - this.width,
+				Y: height - this.height
+			};
+
+			if (xDiff > 0 && yDiff > 0) {
+				removeSeam((xDiff > yDiff)
+			}
+
+			while (xDiff < 0 && yDiff < 0) {
+				var seams {
+					X: findSeam(directions.X),
+					Y: findSeam(directions.Y)
+				};
+
+				// If xDiff != 0 and yDiff != 0, we choose the direction where the seam has the minimum energy 
+				var direction = (seams.Y.energy < seams.X.energy)? directions.Y : directions.X;
+				
+				retargeted = removeSeam(retargeted, seams[direction]);
+				diffs[direction]++;
+			};*/
 			/*
 		  var: resized = clone(image)
 		  
@@ -33,13 +57,13 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
 		   
 		  return: resized
 			*/
-		}
+		};
 
-		GimelImage.prototype.findSeam = function() {
+		GimelImage.prototype.findSeam = function() {/*
 			// Energy map: first line
 			for (var x = 0; x < this.width; x++) {
 				energyMap.data[x] = energyFunction(this, x, 0);
-			}
+			}*/
 
 			/*
 			var: mask = new Image(image.width, image.height)
