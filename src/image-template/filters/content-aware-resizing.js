@@ -3,19 +3,70 @@ gimel.module('imageTemplate').extend(function(moduleContent) {
 		/*var energyFunction;
 		var energyMap;*/
 
-		GimelImage.prototype.retarget = function(width, height, protectMask, removeMask) {/*
-			var directions {
-				X: 'X', 
-				Y: 'Y'
-			};
-
+		GimelImage.prototype.retarget = function(width, height, protectMask, removeMask) {
 			var retargeted = this.clone();
 
-			var diffs = {
-				X: width  - this.width,
-				Y: height - this.height
-			};
+			var xDiff = width  - this.width;
+			var yDiff = height - this.height;
 
+			var xyOperationMask = 0x00;
+			xyOperationMask += (xDiff > 0)? 0x08 : ((xDiff < 0)? 0x04 : 0x00) + (yDiff > 0)? 0x02 : ((yDiff < 0)? 0x01 : 0x00);
+			/*
+			switch (xyOperationMask) {
+			case 0x00: // xDiff=0, yDiff=0: no operation at all; abort
+				break;
+			case 0x01: // xDiff=0, yDiff<0: y image reducing
+			  while (yDiff < 0) {
+			  	retargeted = removeVerticalSeam(retargeted, findVerticalSeam(retargeted, protectMask, removeMask));
+			  	yDiff++;
+			  }
+				break; 
+			case 0x02: // xDiff=0, yDiff>0: y image enlarging
+				var halfWidth = (this.width >> 1);
+				while (yDiff > halfWidth) {
+					var duplicateSeamMask = new gimel.BinaryMask(retargeted.width, retargeted.height, false); 
+					for (var i = 0, ii = yDiff; i < ii; i++) {
+						// Mask: object method (maskObject.logicalOR...) modifies the object of the method. 
+						// Static method (gimel.BinaryMask.LogicalOR...) doesn't.
+						var seam = findVerticalSeam(retargeted, gimel.BinaryMask.LogicalOR(protectMask, duplicateSeamMask), removeMask);
+						retargeted = duplicateVerticalSeam(retargeted, seam);
+						duplicateSeamMask = duplicateVerticalSeam(duplicateSeamMask.logicalOR(seamAsMask(seam), seam);
+
+						// develop mask support (binary, 8bits, ...). 
+						// Use a mask to store chosen and duplicate seams, and combine it to the protectmask in order to avoid a pixel to be duplicate twice
+						// Mask: logical OR, AND, NOT, XOR, NOR, NAND
+					}
+				}
+				break;
+			case 0x04: // xDiff<0, yDiff=0: x image reducing
+			  while (xDiff < 0) {
+			  	retargeted = removeHorizontalSeam(retargeted, findHorizontalSeam(retargeted, protectMask, removeMask));
+			  	xDiff++;
+			  }
+				break;
+			case 0x05: // xDiff<0, yDiff<0: x image reducing  and y image reducing
+				while (xDiff < 0 || yDiff < 0) {
+					var horizontalSeam = findHorizontalSeam(retargeted, protectMask, removeMask);
+					var   verticalSeam = finVerticalSeam(retargeted, protectMask, removeMask);
+
+					if (horizontalSeam.energy < verticalSeam.energy) {
+						retargeted = removeHorizontalSeam(retargeted, horizontalSeam);
+						xDiff++;
+					} else {
+						retargeted = removeVerticalSeam(retargeted, verticalSeam);
+						yDiff++;
+					}
+				}
+				break;
+			case 0x06: // xDiff<0, yDiff>0: x image reducing  and y image enlarging
+				break;
+			case 0x08: // xDiff>0, yDiff=0: x image enlarging
+				break;
+			case 0x09: // xDiff>0, yDiff<0: x image enlarging and y image reducing
+			case 0x0A: // xDiff>0, yDiff>0: x image enlarging and y image enlarging
+			}*/
+			return retargeted;
+			/*
 			if (xDiff > 0 && yDiff > 0) {
 				removeSeam((xDiff > yDiff)
 			}
