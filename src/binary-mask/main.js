@@ -10,11 +10,12 @@ gimel.defineModule('binaryMask', ['imageTemplate'], function(moduleContent, exte
     var BinaryMask = function(width, height, defaultValue) {
         this.width = width;
         this.height = height;
+        this.length = width*height;
         defaultValue = (defaultValue? 0xff : 0x00);
 
         this.data = new window.Uint8Array(width*height);
         if (defaultValue) {
-           for (var i = 0, ii = width*height; i < ii; ++i) {
+           for (var i = 0, ii = this.length; i < ii; ++i) {
                this.data[i] = defaultValue;
            }
         }
