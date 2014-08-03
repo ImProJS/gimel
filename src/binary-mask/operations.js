@@ -107,7 +107,7 @@ gimel.module('binaryMask').extend(function(moduleContent) {
     // ADVANCED OPERATORS: difference, ...
 
     /**
-     * Logical XOR operation. Set operation: symmetric difference
+     * Logical A AND NOT B operation. Set operation: difference
      * @param {BinaryMask} mask1 - the first mask
      * @param {BinaryMask} mask2 - the second mask
      * @param {BinaryMask} dest - mask on which the result is written (mask1, mask2, this...). If undefined, create a new mask
