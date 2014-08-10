@@ -245,6 +245,73 @@ this.gimel = (function() {
     return new Gimel();
 })();
 
+gimel.module('binaryMask').extend(function(moduleContent) {
+		/**
+     * Convert a binary mask to an RGBA image, in order to be displayed.
+     * @return {GimelImage} image representing the mask
+     */
+    gimel.BinaryMask.prototype.toUint8T4ChImage = function() { 
+    		var image = new gimel.Uint8T4ChImage(this.width, this.height);
+
+    		var maskData  = this.data;
+    		var imageData = image.data; 
+
+	    	for (var m = 0, i = 0, mm = this.length; m < mm; ++m) {
+		        imageData[i++] = imageData[i++] = imageData[i++] = maskData[m];
+		        imageData[i++] = 0xff;
+    		}
+
+    		return image;
+    };
+
+		/**
+     * Convert an RGBA image to a binary mask: clone red channel (0 -> 0x00, 1..255 -> 0xff).
+     * For binarization methods, see binarization module.
+     * @param {GimelImage} image - image representing the mask
+     * @return {BinaryMask} mask read from image
+     */
+    gimel.BinaryMask.prototype.fromUint8T4ChImage = function(image) { 
+    		var maskData  = this.data;
+    		var imageData = image.data; 
+
+    		this.width  = image.width;
+    		this.height = image.height;
+    		this.length = this.width*this.height;
+
+	    	for (var i = 0, m = 0, ii = image.length; i < ii; i += 4, ++m) {
+		        maskData[m] = (imageData[i] > 0)? 0xff : 0x00;
+    		}
+
+    		return this;
+    };
+
+		/**
+     * Superimpose the mask on a given image.
+     * @param {GimelImage} image - the given image
+     * @return {GimelImage} mask read from image
+     */
+    gimel.BinaryMask.prototype.superimposeOn = function(image, rgbaColor) {
+    		var maskData  = this.data;
+    		var imageData = image.data; 
+
+    		var opacity = rgbaColor[3];
+    		var r = rgbaColor[0]*opacity/0xff;
+    		var g = rgbaColor[1]*opacity/0xff;
+    		var b = rgbaColor[2]*opacity/0xff;
+    		var coefficient = 0xff/(0xff+opacity);
+
+	    	for (var i = 0, m = 0, ii = image.length; i < ii; i += 4, ++m) {
+	    			if (maskData[m] > 0) {
+	    					imageData[i    ] = Math.round((imageData[i    ] + r)*coefficient);
+	    					imageData[i + 1] = Math.round((imageData[i + 1] + g)*coefficient);
+	    					imageData[i + 2] = Math.round((imageData[i + 2] + b)*coefficient);
+	    			} 
+    		}
+
+    		return image;
+    };
+});
+
 gimel.defineModule('binaryMask', ['imageTemplate'], function(moduleContent, extensions) {
     /**
      * Constructs binary Mask with specified width, height.
@@ -528,8 +595,139 @@ gimel.module('binaryMask').extend(function(moduleContent) {
 
 gimel.module('imageTemplate').extend(function(moduleContent) {
 	gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
-		/*var energyFunction;
-		var energyMap;*/
+
+		/*
+		var energyFunction;
+		var energyMap;
+		*/
+
+
+    if (channels === 1) {
+			GimelImage.prototype.buildGradientEnergyMap = function(protectMask, removeMask) {
+				if (protectMask || removeMask) null /* console.log(' ') */;
+
+				var energyMap = new gimel.Float32T1ChImage(this.width, this.height);
+				var energyData = energyMap.data, imageData = this.data;
+
+				var x, y, xx = this.width, yy = this.height, yOffset;
+				// FIRST ROW
+				// First pixel (top left corner)
+				energyData[0] = (2*Math.abs(imageData[0] - imageData[1])  + 
+					               2*Math.abs(imageData[0] - imageData[xx]));
+				// Middle pixels (top border)
+			  for (x = 1; x < xx - 1; ++x) {
+			    energyData[x] = (  Math.abs(imageData[x - 1] - imageData[x + 1]) + 
+			    	               2*Math.abs(imageData[x]     - imageData[x + xx]));
+			  }
+			  // Last pixel (top right corner)
+			  x = xx - 1;
+			  energyData[x] = (2*Math.abs(imageData[x - 1] - imageData[x]) + 
+			  	               2*Math.abs(imageData[x]     - imageData[x + xx]));
+
+			  // MIDDLE ROWS
+			  // First pixel (left border)
+			  for (y = 1, yOffset = xx; y < yy - 1; ++y, yOffset += xx) {
+					energyData[yOffset] = (2*Math.abs(imageData[yOffset]      - imageData[yOffset + 1])  + 
+						                       Math.abs(imageData[yOffset - xx] - imageData[yOffset + xx]) +
+						                       Math.min(energyData[yOffset - xx], energyData[yOffset - xx + 1]));
+					// Middle pixels (center)
+			    for (x = 1; x < xx - 1; ++x) {
+				    energyData[yOffset + x] = (Math.abs(imageData[yOffset + x - 1]  - imageData[yOffset + x + 1])  + 
+				    	                         Math.abs(imageData[yOffset + x - xx] - imageData[yOffset + x + xx]) +
+						                           Math.min(energyData[yOffset + x - xx - 1], energyData[yOffset + x - xx], energyData[yOffset + x - xx + 1])); 
+			    }
+			    // Last pixel (right border)
+			    x = xx - 1;
+				  energyData[yOffset + x] = (2*Math.abs(imageData[yOffset + x - 1]  - imageData[yOffset + x])      + 
+				  	                           Math.abs(imageData[yOffset + x - xx] - imageData[yOffset + x + xx]) +
+						                           Math.min(energyData[yOffset + x - xx - 1], energyData[yOffset + x - xx]));
+			  }
+			  // LAST ROW
+			  yOffset = (yy - 1)*xx;
+			  // First pixel (bottom left corner)
+				energyData[yOffset] = (2*Math.abs(imageData[yOffset] - imageData[yOffset + 1])  + 
+					                     2*Math.abs(imageData[yOffset - xx] - imageData[yOffset]) +
+						                     Math.min(energyData[yOffset - xx], energyData[yOffset - xx + 1]));
+				energyMap.max = energyData[yOffset];
+				// Middle pixels (bottom border)
+			  for (x = 1; x < xx - 1; ++x) {
+			    energyData[yOffset + x] = (  Math.abs(imageData[yOffset + x - 1]  - imageData[yOffset + x + 1])  + 
+			    	                         2*Math.abs(imageData[yOffset + x - xx] - imageData[yOffset + x]) +
+						                           Math.min(energyData[yOffset + x - xx - 1], energyData[yOffset + x - xx], energyData[yOffset + x - xx + 1]));
+			    if (energyData[yOffset + x] > energyMap.max) {
+			    	energyMap.max = energyData[yOffset + x];
+			    }
+			  }
+			  // Last pixel (bottom right corner)
+			  x = xx - 1;
+			  energyData[yOffset + x] = (2*Math.abs(imageData[yOffset + x - 1]  - imageData[yOffset + x]) + 
+			  	                         2*Math.abs(imageData[yOffset + x - xx] - imageData[yOffset + x]) +
+						                         Math.min(energyData[yOffset + x - xx - 1], energyData[yOffset + x - xx]));
+				if (energyData[yOffset + xx - 1] > energyMap.max) {
+			  	energyMap.max = energyData[yOffset + x];
+			  }
+
+			  return energyMap;
+			};
+
+/*
+function: removeSeam(image: Image, seam: Array) {
+  var: resized = new Image(image.width-1, image.height)
+  
+  for (var: y in 0..image.height):
+    for (var: x in 0..seam[y]-1):
+      resized(x, y) = image(x, y)
+    for (var: x in seam[y]+1..resized.width-1):
+      resized(x, y) = image(x, y)
+  
+  return: resized
+}
+*/
+			GimelImage.prototype.removeVerticalSeam = function(seam) {
+				var resized = new GimelImage(this.width - 1, this.height);
+				var oldData = this.data, newData = resized.data;
+
+				for (var y = 0, yOldOffset = 0, yNewOffset = 0, yy = this.height, xx = this.width; y < yy; ++y, yOldOffset += xx, yNewOffset += xx - 1) {
+					for (var x = 0, xSeam = seam[y]; x < xSeam; ++x) {
+						newData[yNewOffset + x] = oldData[yOldOffset + x];
+					}
+					for (++x; x < xx; ++x) {
+						newData[yNewOffset + x - 1] = oldData[yOldOffset + x];
+					}
+				}
+
+				return resized;
+			};
+		}
+
+		GimelImage.prototype.rebuildEnergyMapAroundSeam = function(energyMap, seam) { seam = []; return energyMap; };
+
+		GimelImage.prototype.findVerticalSeam = function(energyMap) {
+			var seam = new Array(energyMap.height);
+		  var energyData = energyMap.data;
+
+		  // Last row
+		  var y = energyMap.height - 1;
+		  seam[y] = 0;
+		  for (var x = 1, xx = energyMap.width, yOffset = y*xx; x < xx; ++x) {
+		  	if (energyData[yOffset + x] < energyData[yOffset + seam[y]]) {
+		  		seam[y] = x;
+		  	}
+		  }
+
+		  // Remaining rows
+			for (y = energyMap.height - 2, xx = energyMap.width, yOffset = y*xx; y >= 0; --y, yOffset -= xx) {
+				x = seam[y] = seam[y + 1];
+		    if (x > 0  && energyData[yOffset + x - 1] < energyData[yOffset + seam[y]]) {
+		      seam[y] = x - 1;
+		    }
+		    if (x < xx && energyData[yOffset + x + 1] < energyData[yOffset + seam[y]]) {
+		      seam[y] = x + 1;
+		    }
+		  }
+		  
+		  return seam;
+		};
 
 		GimelImage.prototype.retarget = function(width, height, protectMask, removeMask) {
 			var retargeted = this.clone();

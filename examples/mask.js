@@ -10,14 +10,9 @@ gimel.io.imageFromFile('samples/sample1.png', function(image) {
     mask.drawCircle(300, 200, 130, 1);
     mask.drawCircle(300, 200, 135, 2);
     mask.drawCircle(300, 200, 140, 3);
-    mask.not();
 
-    for (var i = 0, ii = image.data.length >> 2; i < ii; ++i) {
-        image.data[(i << 2) + 0] = mask.data[i];
-        image.data[(i << 2) + 1] = mask.data[i];
-        image.data[(i << 2) + 2] = mask.data[i];
-        image.data[(i << 2) + 3] = 0xff;
-    }
+    //image.data = mask.not().toUint8T4ChImage().data;
+    mask.superimposeOn(image, [0xff, 0xff, 0x00, 0xC0]);
 
     // Paint the result on the canvas
     canvasElement.width = image.width;

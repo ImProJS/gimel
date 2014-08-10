@@ -1,7 +1,138 @@
 gimel.module('imageTemplate').extend(function(moduleContent) {
 	gimel.imageTemplate.extend(function(GimelImage, dataType, channels) {
-		/*var energyFunction;
-		var energyMap;*/
+
+		/*
+		var energyFunction;
+		var energyMap;
+		*/
+
+
+    if (channels === 1) {
+			GimelImage.prototype.buildGradientEnergyMap = function(protectMask, removeMask) {
+				if (protectMask || removeMask) console.log(' ');
+
+				var energyMap = new gimel.Float32T1ChImage(this.width, this.height);
+				var energyData = energyMap.data, imageData = this.data;
+
+				var x, y, xx = this.width, yy = this.height, yOffset;
+				// FIRST ROW
+				// First pixel (top left corner)
+				energyData[0] = (2*Math.abs(imageData[0] - imageData[1])  + 
+					               2*Math.abs(imageData[0] - imageData[xx]));
+				// Middle pixels (top border)
+			  for (x = 1; x < xx - 1; ++x) {
+			    energyData[x] = (  Math.abs(imageData[x - 1] - imageData[x + 1]) + 
+			    	               2*Math.abs(imageData[x]     - imageData[x + xx]));
+			  }
+			  // Last pixel (top right corner)
+			  x = xx - 1;
+			  energyData[x] = (2*Math.abs(imageData[x - 1] - imageData[x]) + 
+			  	               2*Math.abs(imageData[x]     - imageData[x + xx]));
+
+			  // MIDDLE ROWS
+			  // First pixel (left border)
+			  for (y = 1, yOffset = xx; y < yy - 1; ++y, yOffset += xx) {
+					energyData[yOffset] = (2*Math.abs(imageData[yOffset]      - imageData[yOffset + 1])  + 
+						                       Math.abs(imageData[yOffset - xx] - imageData[yOffset + xx]) +
+						                       Math.min(energyData[yOffset - xx], energyData[yOffset - xx + 1]));
+					// Middle pixels (center)
+			    for (x = 1; x < xx - 1; ++x) {
+				    energyData[yOffset + x] = (Math.abs(imageData[yOffset + x - 1]  - imageData[yOffset + x + 1])  + 
+				    	                         Math.abs(imageData[yOffset + x - xx] - imageData[yOffset + x + xx]) +
+						                           Math.min(energyData[yOffset + x - xx - 1], energyData[yOffset + x - xx], energyData[yOffset + x - xx + 1])); 
+			    }
+			    // Last pixel (right border)
+			    x = xx - 1;
+				  energyData[yOffset + x] = (2*Math.abs(imageData[yOffset + x - 1]  - imageData[yOffset + x])      + 
+				  	                           Math.abs(imageData[yOffset + x - xx] - imageData[yOffset + x + xx]) +
+						                           Math.min(energyData[yOffset + x - xx - 1], energyData[yOffset + x - xx]));
+			  }
+			  // LAST ROW
+			  yOffset = (yy - 1)*xx;
+			  // First pixel (bottom left corner)
+				energyData[yOffset] = (2*Math.abs(imageData[yOffset] - imageData[yOffset + 1])  + 
+					                     2*Math.abs(imageData[yOffset - xx] - imageData[yOffset]) +
+						                     Math.min(energyData[yOffset - xx], energyData[yOffset - xx + 1]));
+				energyMap.max = energyData[yOffset];
+				// Middle pixels (bottom border)
+			  for (x = 1; x < xx - 1; ++x) {
+			    energyData[yOffset + x] = (  Math.abs(imageData[yOffset + x - 1]  - imageData[yOffset + x + 1])  + 
+			    	                         2*Math.abs(imageData[yOffset + x - xx] - imageData[yOffset + x]) +
+						                           Math.min(energyData[yOffset + x - xx - 1], energyData[yOffset + x - xx], energyData[yOffset + x - xx + 1]));
+			    if (energyData[yOffset + x] > energyMap.max) {
+			    	energyMap.max = energyData[yOffset + x];
+			    }
+			  }
+			  // Last pixel (bottom right corner)
+			  x = xx - 1;
+			  energyData[yOffset + x] = (2*Math.abs(imageData[yOffset + x - 1]  - imageData[yOffset + x]) + 
+			  	                         2*Math.abs(imageData[yOffset + x - xx] - imageData[yOffset + x]) +
+						                         Math.min(energyData[yOffset + x - xx - 1], energyData[yOffset + x - xx]));
+				if (energyData[yOffset + xx - 1] > energyMap.max) {
+			  	energyMap.max = energyData[yOffset + x];
+			  }
+
+			  return energyMap;
+			};
+
+/*
+function: removeSeam(image: Image, seam: Array) {
+  var: resized = new Image(image.width-1, image.height)
+  
+  for (var: y in 0..image.height):
+    for (var: x in 0..seam[y]-1):
+      resized(x, y) = image(x, y)
+    for (var: x in seam[y]+1..resized.width-1):
+      resized(x, y) = image(x, y)
+  
+  return: resized
+}
+*/
+			GimelImage.prototype.removeVerticalSeam = function(seam) {
+				var resized = new GimelImage(this.width - 1, this.height);
+				var oldData = this.data, newData = resized.data;
+
+				for (var y = 0, yOldOffset = 0, yNewOffset = 0, yy = this.height, xx = this.width; y < yy; ++y, yOldOffset += xx, yNewOffset += xx - 1) {
+					for (var x = 0, xSeam = seam[y]; x < xSeam; ++x) {
+						newData[yNewOffset + x] = oldData[yOldOffset + x];
+					}
+					for (++x; x < xx; ++x) {
+						newData[yNewOffset + x - 1] = oldData[yOldOffset + x];
+					}
+				}
+
+				return resized;
+			};
+		}
+
+		GimelImage.prototype.rebuildEnergyMapAroundSeam = function(energyMap, seam) { seam = []; return energyMap; };
+
+		GimelImage.prototype.findVerticalSeam = function(energyMap) {
+			var seam = new Array(energyMap.height);
+		  var energyData = energyMap.data;
+
+		  // Last row
+		  var y = energyMap.height - 1;
+		  seam[y] = 0;
+		  for (var x = 1, xx = energyMap.width, yOffset = y*xx; x < xx; ++x) {
+		  	if (energyData[yOffset + x] < energyData[yOffset + seam[y]]) {
+		  		seam[y] = x;
+		  	}
+		  }
+
+		  // Remaining rows
+			for (y = energyMap.height - 2, xx = energyMap.width, yOffset = y*xx; y >= 0; --y, yOffset -= xx) {
+				x = seam[y] = seam[y + 1];
+		    if (x > 0  && energyData[yOffset + x - 1] < energyData[yOffset + seam[y]]) {
+		      seam[y] = x - 1;
+		    }
+		    if (x < xx && energyData[yOffset + x + 1] < energyData[yOffset + seam[y]]) {
+		      seam[y] = x + 1;
+		    }
+		  }
+		  
+		  return seam;
+		};
 
 		GimelImage.prototype.retarget = function(width, height, protectMask, removeMask) {
 			var retargeted = this.clone();
